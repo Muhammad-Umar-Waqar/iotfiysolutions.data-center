@@ -1,0 +1,424 @@
+.freezer-cards-container {
+  /* control card height, gap and padding from one place */
+  --card-height: 8rem;
+  /* default per-card height (change as needed) */
+  --grid-gap: 0.5rem;
+  --container-padding: 0.5rem;
+
+  padding: var(--container-padding);
+
+
+  /* background-color: #07518d17; */
+  border-radius: 20px;
+
+  /* show exactly two rows, then vertical scroll */
+  /* max-height: calc((var(--card-height) * 2) + var(--grid-gap) + (var(--container-padding) * 2)); */
+  /* 👇 IMPORTANT */
+  min-height: calc((var(--card-height) * 2) + var(--grid-gap) + (var(--container-padding) * 2));
+
+  max-height: calc((var(--card-height) * 2) + var(--grid-gap) + (var(--container-padding) * 2));
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.freezer-empty-state {
+  height: calc((var(--card-height) * 2) + var(--grid-gap) + (var(--container-padding) * 2));
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* optional: nicer thin custom scrollbar (webkit + generic) */
+.freezer-cards-container.custom-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.freezer-cards-container.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+}
+
+/* Firefox */
+.freezer-cards-container.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
+}
+
+/* Disable scroll ONLY for empty state */
+.freezer-cards-container.no-scroll {
+  overflow-y: hidden;
+}
+
+
+/* grid: fixed row height (so both rows have the same height) */
+.freezer-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--grid-gap);
+  grid-auto-rows: var(--card-height);
+  /* IMPORTANT: makes each row fixed height */
+  align-items: stretch;
+}
+
+/* card: use the variable for height (replace your clamp height) */
+.freezer-card-container {
+  height: var(--card-height);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: white;
+  min-width: 0;
+  /* avoid overflow from long text */
+  overflow: hidden;
+  /* ensure inner overflow doesn't grow the card */
+}
+
+
+.freezer-card-container.selected {
+  background: linear-gradient(135deg,
+      #4f64cf 0%,
+      #45d2de 100%);
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  border: none;
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+.freezer-card-container:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.freezer-card-container:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Alerts Bottom Section CSS */
+
+/* ===== ALERT BACKGROUNDS ===== */
+
+/* Refrigerator alert (RED) */
+.freezer-card-container.alert-critical {
+  background-color: #CF4F4F;
+  color: white;
+}
+
+/* Battery alert (GREEN) */
+.freezer-card-container.alert-battery {
+  background-color: #5095B4;
+  color: white;
+}
+
+
+
+.freezer-label {
+  font-size: clamp(1.1rem, 1vw, 2rem);
+  font-weight: 100;
+}
+
+.ambient-label {
+  font-size: clamp(1.1rem, 1vw, 2rem);
+  font-weight: 400;
+}
+
+.res-text {
+  font-size: clamp(0.6rem, 0.5vw, 2rem);
+}
+
+
+/* Freezer temperature section */
+.freezer-temp-section {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  padding-bottom: 0.2rem;
+}
+
+.device-id-value {
+  /* font-size: 0.2rem; */
+  /* font-weight: semi-bold; */
+  font-size: clamp(1.1rem, 1vw, 2rem);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  max-width: 100%;
+  /* KEY LINE */
+}
+
+
+.freezer-card-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  min-height: 0;
+  padding: 0.75rem 0.75rem 0 0.75rem;
+}
+
+
+/* Device ID styling */
+.device-id-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.device-id-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  /* margin-bottom: 0.25rem; */
+  opacity: 0.7;
+}
+
+
+.ambient-pill {
+  display: flex;
+  border-radius: 9999px;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+
+}
+
+
+.freezer-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.freezer-temp-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 0.25rem;
+}
+
+.freezer-temp-value {
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+
+
+.alert-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-left: 0.25rem;
+}
+
+
+.responsive-value {
+  font-size: clamp(2rem, 2vw, 2rem);
+}
+
+.responsive-value-status {
+  /* min, preferred, max */
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+  font-weight: 500;
+}
+
+
+.device-id-wrapper {
+  max-width: 100%;
+  /* inherit from grid / card */
+  overflow: hidden;
+}
+
+
+/* Mobile: smaller cards so 2 rows fit nicely */
+@media (max-width: 639px) {
+  .freezer-cards-container {
+    --card-height: 13rem;
+    --grid-gap: 1rem;
+    --container-padding: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .freezer-cards-grid {
+    grid-template-columns: repeat(autofill, 1fr);
+  }
+
+  .freezer-icon {
+    width: 3rem;
+    height: 3rem;
+    margin-top: 0.5rem;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .ambient-res-label {
+    font-size: clamp(0.85rem, 1vw, 2rem);
+    font-weight: 400;
+  }
+
+}
+
+/* tablet */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .freezer-cards-container {
+    --card-height: 10rem;
+    --grid-gap: 0.9rem;
+    --container-padding: 1rem;
+  }
+
+  .freezer-cards-grid {
+    grid-template-columns: repeat(autofill, 1fr);
+  }
+}
+
+/* desktop */
+@media (min-width: 1024px) and (max-width: 1919px) {
+  .freezer-cards-container {
+    --card-height: 10.5rem;
+    --grid-gap: 1rem;
+    --container-padding: 1rem;
+  }
+
+  /* allow auto-fill into 3 or 4 columns depending on width */
+  .freezer-cards-grid {
+    grid-template-columns: repeat(autofill, minmax(260px, 1fr));
+  }
+}
+
+/* large monitors */
+@media (min-width: 1920px) {
+  .freezer-cards-grid {
+    grid-template-columns: repeat(4, minmax(260px, 1fr));
+  }
+
+  .freezer-cards-container {
+    --card-height: 12rem;
+    --grid-gap: 1.25rem;
+    --container-padding: 1.25rem;
+  }
+}
+
+@media (min-width: 580px) and (max-width: 767px) {
+  .device-id-value {
+    font-size: clamp(1rem, 1vw, 1.5rem);
+    font-weight: 700;
+  }
+
+  .freezer-label {
+    font-size: clamp(1rem, 0.9vw, 1rem);
+    /* font-weight: 100; */
+  }
+}
+
+@media (min-width: 768px) {
+  .freezer-label {
+    font-size: clamp(0.7rem, 0.9vw, 1rem);
+    /* font-weight: 100; */
+  }
+
+  .ambient-label {
+    font-size: clamp(0.7rem, 0.9vw, 1rem);
+    /* font-weight: 100; */
+  }
+}
+
+
+/* ===== 14-INCH LAPTOPS (1024px to 1365px) ===== */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .device-id-value {
+    font-size: clamp(0.7rem, 1.5vw, 1.5rem);
+    font-weight: 700;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1366px) {
+  .freezer-temp-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+}
+
+/* 15-17 inch laptops */
+@media (min-width: 1365px) and (max-width: 1599px) {
+  .freezer-temp-value {
+    font-size: 2rem;
+    font-weight: bold;
+  }
+}
+
+/* 19-21 inch monitors */
+@media (min-width: 1600px) and (max-width: 1919px) {
+  .freezer-temp-value {
+    font-size: 2rem;
+    font-weight: bold;
+  }
+
+}
+
+/* 22-24 inch monitors */
+@media (min-width: 1920px) and (max-width: 2559px) {
+  .freezer-temp-value {
+    font-size: 2rem;
+    font-weight: bold;
+  }
+}
+
+/* 25-27 inch monitors */
+@media (min-width: 2560px) {
+  .freezer-temp-value {
+    font-size: 2rem;
+    font-weight: bold;
+  }
+}
+
+@media (min-width: 320px) and (max-width: 560px) {
+  .ambient-pill {
+    padding: 0.6rem 0.7rem;
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 1730px) {
+  .responsive-value-status {
+    font-size: clamp(0.9rem, 3.5vw, 1.4rem);
+    font-weight: 500;
+  }
+
+}
+
+@media (min-width: 1240px) {
+  .responsive-value-status {
+    /* min, preferred, max */
+    font-size: clamp(0.6rem, vw, 0.7rem);
+    font-weight: 500;
+  }
+
+}
+
+
+.white-icon {
+  filter: invert(0) brightness(10);
+}
+
+
+
+
+@media (max-width: 550px) {
+
+  /* Hide scrollbar but allow scrolling */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    /* IE & Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Opera */
+  }
+}

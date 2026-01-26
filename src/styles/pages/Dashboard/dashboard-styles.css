@@ -1,0 +1,751 @@
+.rack-view-container {
+  /* SAME math as freezer-cards-container */
+  --card-height: 10.5rem;
+  --grid-gap: 1rem;
+  --container-padding: 1rem;
+
+  min-height: calc((var(--card-height) * 2) + var(--grid-gap) + (var(--container-padding) * 2));
+  max-height: calc((var(--card-height) * 2) + var(--grid-gap) + (var(--container-padding) * 2));
+  /* background: #07518d1d; */
+  overflow: hidden; /* important */
+  position: relative;
+}
+@media (max-width: 639px) {
+ .rack-view-container {
+    --card-height: 13rem;
+    --grid-gap: 1rem;
+    --container-padding: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (min-width: 420px) and (max-width: 768px) {
+  .dashboard-right-panel {
+    width: 450 !important;
+    min-width: 450px !important;
+    max-width: 768px !important;
+    display: flex !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    position: relative !important;
+    visibility: visible !important;
+  }
+}
+
+
+
+@media (min-width: 320px) and (max-width: 420px) {
+  .dashboard-right-panel {
+    /* width: 320px !important; */
+    min-width: 320px !important;
+    max-width: 768px !important;
+    display: flex !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    position: relative !important;
+    visibility: visible !important;
+  }
+}
+
+
+
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .organization-cards-grid-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .dashboard-main-content {
+    padding: 1rem;
+  }
+  
+  .dashboard-right-panel {
+    width: 350px !important;
+    min-width: 350px !important;
+    max-width: 320px !important;
+    padding: 0.5rem !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-shrink: 0 !important;
+  }
+  
+  /* Adjust font sizes for better readability on smaller screens */
+  .dashboard-main-content h1 {
+    font-size: 1.5rem;
+  }
+  
+  .dashboard-main-content h2 {
+    font-size: 1.25rem;
+  }
+  
+  .dashboard-main-content h3 {
+    font-size: 1.125rem;
+  }
+}
+
+/* 15-17 inch laptops (1366px to 1599px) */
+@media (min-width: 1365px) and (max-width: 1599px) {
+  .organization-cards-grid-container {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .dashboard-main-content {
+    padding: 1rem;
+  }
+  
+  .dashboard-right-panel {
+    width: 400px !important;
+    min-width: 400px !important;
+    max-width: 400px !important;
+    /* padding: 1rem !important; */
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+/* ===== DESKTOP MONITOR RANGE ===== */
+/* 19-21 inch monitors (1600px to 1919px) */
+@media (min-width: 1600px) and (max-width: 1919px) {
+  .organization-cards-grid-container {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.75rem;
+  }
+  
+  .dashboard-main-content {
+    padding: 2rem;
+  }
+  
+  .dashboard-right-panel {
+    width: 400px !important;
+    min-width: 400px !important;
+    max-width: 400px !important;
+    /* padding: 1rem !important; */
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+/* 22-24 inch monitors (1920px to 2559px) */
+@media (min-width: 1920px) and (max-width: 2559px) {
+  .organization-cards-grid-container {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2rem;
+  }
+  
+  .dashboard-main-content {
+    padding: 2rem;
+  }
+  
+  .dashboard-right-panel {
+    width: 500px !important;
+    min-width: 420px !important;
+    max-width: 500px !important;
+    /* padding: 2.5rem !important; */
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+/* 25-27 inch monitors (2560px and above) */
+@media (min-width: 2560px) {
+  .organization-cards-grid-container {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 2.25rem;
+  }
+  
+  .dashboard-main-content {
+    padding: 2rem;
+  }
+  
+  .dashboard-right-panel {
+    width: 500px !important;
+    min-width: 480px !important;
+    max-width: 500px !important;
+    /* padding: 3rem !important; */
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-shrink: 0 !important;
+  }
+  
+  /* Larger typography for big screens */
+  .dashboard-main-content h1 {
+    font-size: 2.5rem;
+  }
+  
+  .dashboard-main-content h2 {
+    font-size: 2rem;
+  }
+  
+  .dashboard-main-content h3 {
+    font-size: 1.5rem;
+  }
+}
+
+
+/* Desktop-only - Mobile styles removed */
+
+/* ===== FLEXIBLE LAYOUT ADJUSTMENTS ===== */
+/* Ensure proper spacing and proportions across all screen sizes */
+.dashboard-main-content {
+  transition: padding 0.3s ease-in-out;
+}
+
+.dashboard-right-panel {
+  transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Base right panel styling - ensures it's visible on all screen sizes */
+.dashboard-right-panel {
+  display: flex !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+}
+
+@media (min-width: 2224px) {
+  .dashboard-right-panel {
+    width: 500px !important;
+    min-width: 480px !important;
+    max-width: 560px !important;
+    display: flex !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    position: relative !important;
+    visibility: visible !important;
+  }
+}
+
+/* ===== HIGH DPI DISPLAY SUPPORT ===== */
+/* Optimize for high-resolution displays (Retina, 4K, etc.) */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .organization-cards-grid-container {
+    /* Slightly reduce gaps on high DPI displays for better density */
+    gap: calc(var(--gap, 1.5rem) * 0.9);
+  }
+}
+
+/* ===== ULTRA-WIDE MONITOR SUPPORT ===== */
+/* Support for ultra-wide monitors (21:9 aspect ratio) */
+@media (min-width: 3440px) {
+  .organization-cards-grid-container {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 2.5rem;
+  }
+  
+  .dashboard-main-content {
+    padding: 3rem;
+  }
+  
+  .dashboard-right-panel {
+    width: 520px !important;
+    min-width: 520px !important;
+    max-width: 520px !important;
+    /* padding: 3.5rem !important; */
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+/* ===== RESPONSIVE TYPOGRAPHY ===== */
+/* Base typography that scales with screen size */
+.dashboard-main-content {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Typography scaling for different screen sizes */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .dashboard-main-content {
+    font-size: 14px;
+  }
+  
+  .dashboard-main-content h1 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+  
+  .dashboard-main-content h2 {
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+  
+  .dashboard-main-content h3 {
+    font-size: 1.125rem;
+    line-height: 1.3;
+  }
+}
+
+@media (min-width: 1366px) and (max-width: 1599px) {
+  .dashboard-main-content {
+    font-size: 15px;
+  }
+  
+  .dashboard-main-content h1 {
+    font-size: 1.75rem;
+    line-height: 1.3;
+  }
+  
+  .dashboard-main-content h2 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+  
+  .dashboard-main-content h3 {
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+}
+
+@media (min-width: 1600px) and (max-width: 1919px) {
+  .dashboard-main-content {
+    font-size: 16px;
+  }
+  
+  .dashboard-main-content h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  
+  .dashboard-main-content h2 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+  
+  .dashboard-main-content h3 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+}
+
+@media (min-width: 1920px) and (max-width: 2559px) {
+  .dashboard-main-content {
+    font-size: 17px;
+  }
+  
+  .dashboard-main-content h1 {
+    font-size: 2.25rem;
+    line-height: 1.2;
+  }
+  
+  .dashboard-main-content h2 {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  
+  .dashboard-main-content h3 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+}
+
+@media (min-width: 2560px) {
+  .dashboard-main-content {
+    font-size: 18px;
+  }
+  
+  .dashboard-main-content h1 {
+    font-size: 2.5rem;
+    line-height: 1.1;
+  }
+  
+  .dashboard-main-content h2 {
+    font-size: 2.25rem;
+    line-height: 1.1;
+  }
+  
+  .dashboard-main-content h3 {
+    font-size: 2rem;
+    line-height: 1.1;
+  }
+}
+
+/* ===== RESPONSIVE SPACING ===== */
+/* Dynamic spacing that adapts to screen size */
+.dashboard-main-content {
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 2.5rem;
+  --spacing-3xl: 3rem;
+}
+
+/* Spacing adjustments for different screen sizes */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .dashboard-main-content {
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.25rem;
+    --spacing-xl: 1.5rem;
+    --spacing-2xl: 2rem;
+    --spacing-3xl: 2.5rem;
+  }
+}
+
+@media (min-width: 1366px) and (max-width: 1599px) {
+  .dashboard-main-content {
+    --spacing-xs: 0.75rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.25rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 2.5rem;
+    --spacing-3xl: 3rem;
+  }
+}
+
+@media (min-width: 1600px) and (max-width: 1919px) {
+  .dashboard-main-content {
+    --spacing-xs: 0.75rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 2.5rem;
+    --spacing-2xl: 3rem;
+    --spacing-3xl: 3.5rem;
+  }
+}
+
+@media (min-width: 1920px) and (max-width: 2559px) {
+  .dashboard-main-content {
+    --spacing-xs: 1rem;
+    --spacing-sm: 1.25rem;
+    --spacing-md: 1.75rem;
+    --spacing-lg: 2.25rem;
+    --spacing-xl: 3rem;
+    --spacing-2xl: 3.5rem;
+    --spacing-3xl: 4rem;
+  }
+}
+
+@media (min-width: 2560px) {
+  .dashboard-main-content {
+    --spacing-xs: 1.25rem;
+    --spacing-sm: 1.5rem;
+    --spacing-md: 2rem;
+    --spacing-lg: 2.5rem;
+    --spacing-xl: 3.5rem;
+    --spacing-2xl: 4rem;
+    --spacing-3xl: 4.5rem;
+  }
+}
+
+/* ===== CARD RESPONSIVE SIZING ===== */
+/* Organization cards that adapt to screen size */
+.organization-card {
+  min-height: 200px;
+  transition: all 0.3s ease-in-out;
+}
+
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .organization-card {
+    min-height: 180px;
+  }
+}
+
+@media (min-width: 1366px) and (max-width: 1599px) {
+  .organization-card {
+    min-height: 200px;
+  }
+}
+
+@media (min-width: 1600px) and (max-width: 1919px) {
+  .organization-card {
+    min-height: 220px;
+  }
+}
+
+@media (min-width: 1920px) and (max-width: 2559px) {
+  .organization-card {
+    min-height: 240px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .organization-card {
+    min-height: 260px;
+  }
+}
+
+/* 🔥 END: Custom CSS */
+
+/* Smooth scrolling for dashboard */
+.dashboard-main-content {
+  scroll-behavior: smooth;
+}
+
+.dashboard-main-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dashboard-main-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.dashboard-main-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.dashboard-main-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Custom scrollbar for maintenance list */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+
+/* Fix for icon-number alignment */
+/* .icon-number-align {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 4px;
+} */
+
+/* @media (min-width: 640px) { */
+/* Fix for icon-number alignment */
+.icon-number-align {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+/* } */
+
+
+.icon-number-align span {
+  line-height: 1;
+  transform: translateY(-0.5px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2em;
+  font-variant-numeric: tabular-nums;
+}
+
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .dashboard-right-panel {
+    width: 320px !important;
+    min-width: 320px !important;
+    max-width: 320px !important;
+    display: flex !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    position: relative !important;
+    visibility: visible !important;
+  }
+}
+
+.freezer-card-skeleton {
+  background-color: #ffffffea; /* light slate, matches dashboard */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.15s ease-out;
+}
+
+
+
+
+/* Tabular view styles */
+.tabular-container {
+  /* background: #f3f7f9; */
+  border-radius: 12px;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+/* header row */
+.tabular-header {
+  display: grid;
+  grid-template-columns: minmax(48px, 80px) repeat(auto-fit, minmax(48px, 1fr));
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.corner-label {
+  height: 1px;
+}
+
+.tabular-col-header {
+  text-align: center;
+  font-size: 12px;
+  color: #475569;
+  font-weight: 600;
+}
+
+/* body */
+.tabular-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* max-height: 260px; */
+  overflow: auto;
+  padding-right: 6px;
+}
+
+/* each row: row label + cells */
+.tabular-row {
+  display: grid;
+  grid-template-columns: minmax(48px, 80px) repeat(auto-fit, minmax(48px, 1fr));
+  gap: 8px;
+  align-items: center;
+}
+
+.tabular-row-label {
+  font-size: 13px;
+  color: #334155;
+  font-weight: 700;
+  padding-left: 6px;
+}
+
+/* cells */
+.tabular-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* circle base */
+.rack-circle,
+.rack-circle.empty {
+  width: 38px;
+  height: 38px;
+  border-radius: 9999px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: white;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+/* empty */
+.rack-circle.empty {
+  background: #ffffff;
+  color: #94a3b8;
+  border: 1px dashed rgba(15, 23, 42, 0.06);
+}
+
+/* normal */
+.rack-circle.normal {
+  background: #ffffff;
+  color: #334155;
+}
+
+/* alert */
+.rack-circle.alert {
+  background: #ef9a9a; /* light red */
+  color: white;
+  border: none;
+  box-shadow: 0 4px 10px rgba(207,79,79,0.12);
+}
+
+/* selected */
+.rack-circle.selected {
+  background: #2563eb; /* blue */
+  color: white;
+  border: none;
+  box-shadow: 0 6px 16px rgba(37,99,235,0.18);
+}
+
+/* label inside circle */
+.circle-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1;
+}
+
+/* hover/focus */
+.rack-circle:hover,
+.rack-circle:focus {
+  transform: translateY(-3px);
+  outline: none;
+}
+
+/* scrollbar small */
+.tabular-body::-webkit-scrollbar {
+  width: 8px;
+}
+.tabular-body::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.08);
+  border-radius: 999px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .tabular-container {
+    padding: 8px;
+  }
+  .rack-circle, .rack-circle.empty {
+    width: 32px;
+    height: 32px;
+  }
+  .tabular-body {
+     min-height: calc((var(--card-height) * 2) + var(--grid-gap) + (var(--container-padding) * 2));
+
+  max-height: calc((var(--card-height) * 2) + var(--grid-gap) + (var(--container-padding) * 2));
+  overflow-y: auto;
+  overflow-x: hidden;
+  }
+}
