@@ -394,7 +394,7 @@ export default function AddAckit({ onNext, onBack }) {
 
   return (
     <div className="h-full AddingPage rounded-xl lg:rounded-l-none lg:rounded-r-xl shadow-sm w-full flex flex-col justify-between bg-[#EEF3F9] border border-[#E5E7EB]">
-      <div className="flex-1 flex flex-col justify-center">
+      <div className="flex-1 flex flex-col justify-center p-4">
         <h2 className="data-center-add-title font-semibold mb-1 text-center">Add AC Kit</h2>
         <p className="data-center-add-subtitle text-gray-500 mb-6 text-center">
           Create a new AC Kit (temperature-based action)
