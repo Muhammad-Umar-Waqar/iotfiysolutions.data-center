@@ -1139,7 +1139,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useStore } from "../../contexts/storecontexts";
 import SuspendUserDialog from "../../components/Modals/ManagerManagement/SuspendUserDialog";
 import UserEditModal from "../../components/Modals/UserManagement/EditModal"; // updated path
-import DeleteModal from "../../components/Modals/common/DeleteModal";
+import DeleteModal from "../../components/Modals/Common/DeleteModal";
 
 const UserList = ({ onUserSelect, selectedUser }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
