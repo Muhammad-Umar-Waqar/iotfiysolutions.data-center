@@ -265,7 +265,7 @@
 /* tablet */
 @media (min-width: 640px) and (max-width: 1023px) {
   .freezer-cards-container {
-    --card-height: 10rem;
+    --card-height: 10.6rem;
     --grid-gap: 0.9rem;
     --container-padding: 1rem;
   }
