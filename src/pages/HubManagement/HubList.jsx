@@ -876,7 +876,7 @@ import "../../styles/pages/management-pages.css";
 import TableSkeleton from "../../components/skeletons/TableSkeleton";
 import CloseIcon from "@mui/icons-material/Close";
 import { Drawer, IconButton, useMediaQuery } from "@mui/material";
-import DeleteModal from "../../components/Modals/common/DeleteModal";
+import DeleteModal from "../../components/Modals/Common/DeleteModal";
 import HubEditModal from "../../components/Modals/Common/HubManagement/HubEditModal";
 
 import ManagementListShell from "../../components/Modals/Common/ManagementListShell";

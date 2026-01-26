@@ -802,7 +802,7 @@ import Swal from "sweetalert2";
 
 import { fetchAllRacks, deleteRack, fetchRacksByDataCenterId } from "../../slices/rackSlice";
 import { useInstallation } from "../../contexts/InstallationContext";
-import DeleteModal from "../../components/Modals/common/DeleteModal";
+import DeleteModal from "../../components/Modals/Common/DeleteModal";
 import RackEditModal from "../../components/Modals/Common/RackManagement/RackEditModal";
 
 import "../../styles/pages/management-pages.css";

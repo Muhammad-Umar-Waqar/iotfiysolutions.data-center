@@ -154,7 +154,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2";
 
 import { fetchAllAckits, deleteAckit } from "../../slices/ackitSlice";
-import DeleteModal from "../../components/Modals/common/DeleteModal";
+import DeleteModal from "../../components/Modals/Common/DeleteModal";
 import AckitEditModal from "../../components/Modals/Common/AcKitManagement/AckitEditModal";
 
 import "../../styles/pages/management-pages.css";

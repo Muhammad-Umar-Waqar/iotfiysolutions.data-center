@@ -1077,7 +1077,7 @@ import {
 import { useInstallation } from "../../contexts/InstallationContext";
 
 import TableSkeleton from "../../components/skeletons/TableSkeleton";
-import DeleteModal from "../../components/Modals/common/DeleteModal";
+import DeleteModal from "../../components/Modals/Common/DeleteModal";
 import EditRackCluster from "../../components/Modals/Common/RackClusterManagement/EditRackCluster";
 import ManagementListShell from "../../components/Modals/Common/ManagementListShell";
 import ActionButtons from "../../components/Modals/Common/ActionButtons";

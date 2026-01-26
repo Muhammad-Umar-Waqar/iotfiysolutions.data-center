@@ -1373,7 +1373,7 @@ import {
 } from "../../slices/DataCenterSlice";
 
 import OrganizationEditModal from "../../components/Modals/OrganizationManagement/EditModal";
-import DeleteModal from "../../components/Modals/common/DeleteModal";
+import DeleteModal from "../../components/Modals/Common/DeleteModal";
 import TableSkeleton from "../../components/skeletons/TableSkeleton";
 
 import CloseIcon from "@mui/icons-material/Close";
