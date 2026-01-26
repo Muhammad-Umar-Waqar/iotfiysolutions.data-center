@@ -242,8 +242,8 @@ const handleLogin = async (email, password) => {
           {/* Main Image */}
           <div className="w-full h-full "> {/* Takes remaining space */}
             <img
-              // src={'/login-image.png'}
-              src={'/login-image.webp'}
+              src={'/login-image.png'}
+              // src={'/login-image.webp'}
               className="w-full h-full object-cover"
               alt="IoT HVAC Control"
             />
