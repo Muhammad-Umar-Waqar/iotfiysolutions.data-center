@@ -383,13 +383,13 @@ const realDcId = getEffectiveDataCenterId(effectiveDc);
   }, [selectedRackId, selectedRack, dispatch]);
 
   // top list click handler (optional: allow user to click cluster in right panel to select it)
-  const handleClusterClick = (clusterId) => {
-    // selecting cluster -> update UI selection (this will cause dashboard to fetch racks by cluster)
-    // you may also want to update URL elsewhere; Dashboard's handlers already handle that when RackClusterSelect used.
-    dispatch(setSelectedRackClusterId ? setSelectedRackClusterId(clusterId) : {});
-    // We'll also fetch single cluster mean immediately
-    dispatch(fetchRackClusterMean(clusterId));
-  };
+  // const handleClusterClick = (clusterId) => {
+  //   // selecting cluster -> update UI selection (this will cause dashboard to fetch racks by cluster)
+  //   // you may also want to update URL elsewhere; Dashboard's handlers already handle that when RackClusterSelect used.
+  //   dispatch(setSelectedRackClusterId ? setSelectedRackClusterId(clusterId) : {});
+  //   // We'll also fetch single cluster mean immediately
+  //   dispatch(fetchRackClusterMean(clusterId));
+  // };
 
 
   
@@ -419,7 +419,7 @@ const realDcId = getEffectiveDataCenterId(effectiveDc);
         return (
           <div key={id}>
             <div
-              onClick={() => handleClusterClick(id)}
+              // onClick={() => handleClusterClick(id)}
               className="grid grid-cols-4 items-center px-4 py-3 cursor-pointer hover:bg-gray-50"
             >
               <span className="text-sm font-medium text-gray-700">
