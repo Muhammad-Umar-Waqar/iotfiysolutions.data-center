@@ -1081,165 +1081,7 @@
 
 
 
-// import * as React from "react";
-// import {
-//   Box,
-//   Typography,
-//   Chip,
-//   Stack,
-//   Select,
-//   MenuItem,
-//   Divider,
-// } from "@mui/material";
-
-// export default function RackDetailsPanel({ rack }) {
-//   const [sensorId, setSensorId] = React.useState("");
-
-//   React.useEffect(() => {
-//     if (rack?.sensors?.length) {
-//       setSensorId(rack.sensors[0]._id);
-//     }
-//   }, [rack]);
-
-//   if (!rack) {
-//     return (
-//       <Box p={2}>
-//         <Typography variant="body2" color="text.secondary">
-//           Select a rack to view details
-//         </Typography>
-//       </Box>
-//     );
-//   }
-
-//   const {
-//     name,
-//     hub,
-//     row,
-//     col,
-//     tempV,
-//     humiV,
-//     tempA,
-//     humiA,
-//     sensors = [],
-//     sensorValues = [],
-//   } = rack;
-
-//   const selectedSensorValue = sensorValues.find(
-//     (sv) => sv.sensorId === sensorId
-//   );
-
-//   return (
-//     <Box
-//       p={2.5}
-//       sx={{
-//         borderRadius: 2,
-//         // border: "1px solid",
-//         borderColor: "divider",
-//         backgroundColor: " #ffffffc5",
-
-//         // #078d860c
-//       }}
-//     >
-//       {/* Header */}
-//       <div className="flex items-center justify-start">
-//       <img src="/Server.svg" className="w-auto h-[5rem]" alt="" />
-//       <Stack>
-//         <Typography fontWeight={400}>{name?.charAt(0).toUpperCase() + name.slice(1)}</Typography>
-//         <Typography variant="caption" color="text.secondary">
-//           {hub?.name} • {row?.toUpperCase()} / {col?.toUpperCase()}
-//         </Typography>
-//       </Stack>
-//       </div>
-
-//       <Divider sx={{ my: 1.5 }} />
-
-//       {/* Rack Level Values */}
-//       <Stack direction="row" spacing={1}>
-//         {/* <Chip
-//           size="small"
-//           label={`Temp: ${tempV ?? "N/A"}°C`}
-//           color={tempA ? "error" : "default"}
-//         />
-//         <Chip
-//           size="small"
-//           label={`Humidity: ${humiV ?? "N/A"}%`}
-//           color={humiA ? "warning" : "default"}
-//         /> */}
-
-//           <div className="w-full grid grid-cols-3 place-items-center  gap-3 md:gap-5 ">
-//         {/* <div> */}
-//         {/* </div> */}
-//         <div className="flex items-end justify-center">
-//           <img src="/yellow-alert.svg" className="w-auto h-[1.5rem]" alt="" />
-//           <span className=" font-bold text-xs text-black">Status</span>
-//         </div>
-//         <div className={`icon-number-align border border-1 rounded-sm p-1 w-full  ${tempA ? "border-yellow-600" : "border-gray-400"}`}>
-//           <img src="/card-humidity-icon.svg" alt="Alert" className="w-6 h-6  " />
-//           <span className="text-[#1E293B] res-text ">{tempA ? "Alert Detected" : "Not Detected"}</span>
-//         </div>
-//         <div className={`icon-number-align border border-1 rounded-sm p-1 w-full  ${humiA ? "border-red-500" : "border-gray-400"}`}>
-//           <img src="/temperature-icon.svg" alt="Alert" className="w-6 h-6  " />
-//           <span className="text-[#1E293B] res-text ">{humiA ? "Alert Detected" : "Not Detected"}</span>
-//         </div>
-//       </div>
-//       </Stack>
-
-//       <Divider sx={{ my: 1.5 }} />
-
-//       {/* Sensor Selector */}
-//       <Stack spacing={0.5}>
-//         <Typography variant="caption" color="text.secondary">
-//           Sensor
-//         </Typography>
-
-//         <Select
-//           size="small"
-//           value={sensorId}
-//           onChange={(e) => setSensorId(e.target.value)}
-//         >
-//           {sensors.map((s) => (
-//             <MenuItem key={s._id} value={s._id}>
-//               {s.name}
-//             </MenuItem>
-//           ))}
-//         </Select>
-//       </Stack>
-
-//       {/* Sensor Values */}
-//       {selectedSensorValue ? (
-//         <Stack direction="row" spacing={1} mt={1.5}>
-//           <Chip
-//             size="small"
-//             variant="outlined"
-//             label={`Temp: ${selectedSensorValue.temperature ?? "N/A"}°C`}
-//           />
-//           <Chip
-//             size="small"
-//             variant="outlined"
-//             label={`Humidity: ${selectedSensorValue.humidity ?? "N/A"}%`}
-//           />
-//         </Stack>
-//       ) : (
-//         <Typography variant="caption" color="text.secondary" mt={1}>
-//           sensor data is not availa
-//         </Typography>
-//       )}
-//     </Box>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import Swal from "sweetalert2";
-
+import * as React from "react";
 import {
   Box,
   Typography,
@@ -1250,16 +1092,15 @@ import {
   Divider,
 } from "@mui/material";
 
-import {
-  setAcAuto,
-  setAcManual,
-  fetchRackClusterMean,
-} from "../slices/rackClusterSlice";
+export default function RackDetailsPanel({ rack }) {
+  const [sensorId, setSensorId] = React.useState("");
 
-export default function RackDetailsPanel({ rack, clusterId }) {
-  const dispatch = useDispatch();
+  React.useEffect(() => {
+    if (rack?.sensors?.length) {
+      setSensorId(rack.sensors[0]._id);
+    }
+  }, [rack]);
 
-  /* ------------------ SAFETY ------------------ */
   if (!rack) {
     return (
       <Box p={2}>
@@ -1270,155 +1111,316 @@ export default function RackDetailsPanel({ rack, clusterId }) {
     );
   }
 
-  /* ------------------ OLD RACK DATA ------------------ */
   const {
     name,
     hub,
     row,
     col,
+    tempV,
+    humiV,
     tempA,
     humiA,
     sensors = [],
     sensorValues = [],
   } = rack;
 
-  const [sensorId, setSensorId] = useState("");
-
-  useEffect(() => {
-    if (sensors.length) setSensorId(sensors[0]._id);
-  }, [sensors]);
-
   const selectedSensorValue = sensorValues.find(
     (sv) => sv.sensorId === sensorId
   );
 
-  /* ------------------ AC CONTROL ------------------ */
-  const meanDetail = useSelector((s) => s.rackCluster?.meanDetail);
-  const acLoading = useSelector((s) => s.rackCluster?.loading?.acControl);
-
-  const [autoEnabled, setAutoEnabled] = useState(false);
-  const [manualOn, setManualOn] = useState(false);
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    if (!clusterId) return;
-    dispatch(fetchRackClusterMean(clusterId));
-  }, [clusterId]);
-
-  useEffect(() => {
-    setAutoEnabled(!!meanDetail?.acControl?.enabled);
-    setManualOn(!!meanDetail?.acControl?.manualStatus);
-  }, [meanDetail]);
-
-  const handleAutoToggle = async (e) => {
-    const enabled = e.target.checked;
-    setBusy(true);
-    try {
-      await dispatch(setAcAuto({ clusterId, enabled })).unwrap();
-      setAutoEnabled(enabled);
-      if (enabled) setManualOn(false);
-    } catch (err) {
-      Swal.fire("Error", String(err), "error");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleManual = async (status) => {
-    if (autoEnabled) return;
-    setBusy(true);
-    try {
-      await dispatch(setAcManual({ clusterId, status })).unwrap();
-      setManualOn(status);
-    } catch (err) {
-      Swal.fire("Error", String(err), "error");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  /* ------------------ UI ------------------ */
   return (
-    <div className="">
-      {/* AC Control */}
-      <div className="mb-4 p-3 bg-white  rounded-lg">
-        <div className="flex justify-between items-center">
-          <Typography fontWeight={600}>AC Control</Typography>
+    <Box
+      p={2.5}
+      sx={{
+        borderRadius: 2,
+        // border: "1px solid",
+        borderColor: "divider",
+        backgroundColor: " #ffffffc5",
 
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={autoEnabled}
-              disabled={busy || acLoading}
-              onChange={handleAutoToggle}
-            />
-            AUTO
-          </label>
-
-          <div className="flex gap-1">
-            <button
-              disabled={autoEnabled}
-              onClick={() => handleManual(true)}
-              className={`px-3 py-1 rounded ${
-                manualOn ? "bg-red-500 text-white" : "border"
-              }`}
-            >
-              ON
-            </button>
-
-            <button
-              disabled={autoEnabled}
-              onClick={() => handleManual(false)}
-              className={`px-3 py-1 rounded ${
-                !manualOn ? "bg-gray-400 text-white" : "border"
-              }`}
-            >
-              OFF
-            </button>
-          </div>
-        </div>
+        // #078d860c
+      }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-start">
+      <img src="/Server.svg" className="w-auto h-[5rem]" alt="" />
+      <Stack>
+        <Typography fontWeight={400}>{name?.charAt(0).toUpperCase() + name.slice(1)}</Typography>
+        <Typography variant="caption" color="text.secondary">
+          {hub?.name} • {row?.toUpperCase()} / {col?.toUpperCase()}
+        </Typography>
+      </Stack>
       </div>
 
-      {/* Existing Rack UI */}
-      <Box p={2.5} sx={{ borderRadius: 2, backgroundColor: "#ffffffc5" }}>
-        <div className="flex gap-3">
-          <img src="/Server.svg" className="h-20" />
-          <Stack>
-            <Typography>{name}</Typography>
-            <Typography variant="caption">
-              {hub?.name} • {row}/{col}
-            </Typography>
-          </Stack>
+      <Divider sx={{ my: 1.5 }} />
+
+      {/* Rack Level Values */}
+      <Stack direction="row" spacing={1}>
+        {/* <Chip
+          size="small"
+          label={`Temp: ${tempV ?? "N/A"}°C`}
+          color={tempA ? "error" : "default"}
+        />
+        <Chip
+          size="small"
+          label={`Humidity: ${humiV ?? "N/A"}%`}
+          color={humiA ? "warning" : "default"}
+        /> */}
+
+          <div className="w-full grid grid-cols-3 place-items-center  gap-3 md:gap-5 ">
+        {/* <div> */}
+        {/* </div> */}
+        <div className="flex items-end justify-center">
+          <img src="/yellow-alert.svg" className="w-auto h-[1.5rem]" alt="" />
+          <span className=" font-bold text-xs text-black">Status</span>
         </div>
+        <div className={`icon-number-align border border-1 rounded-sm p-1 w-full  ${tempA ? "border-yellow-600" : "border-gray-400"}`}>
+          <img src="/card-humidity-icon.svg" alt="Alert" className="w-6 h-6  " />
+          <span className="text-[#1E293B] res-text ">{tempA ? "Alert Detected" : "Not Detected"}</span>
+        </div>
+        <div className={`icon-number-align border border-1 rounded-sm p-1 w-full  ${humiA ? "border-red-500" : "border-gray-400"}`}>
+          <img src="/temperature-icon.svg" alt="Alert" className="w-6 h-6  " />
+          <span className="text-[#1E293B] res-text ">{humiA ? "Alert Detected" : "Not Detected"}</span>
+        </div>
+      </div>
+      </Stack>
 
-        <Divider sx={{ my: 1.5 }} />
+      <Divider sx={{ my: 1.5 }} />
 
-        <Stack spacing={0.5}>
-          <Typography variant="caption">Sensor</Typography>
-          <Select
+      {/* Sensor Selector */}
+      <Stack spacing={0.5}>
+        <Typography variant="caption" color="text.secondary">
+          Sensor
+        </Typography>
+
+        <Select
+          size="small"
+          value={sensorId}
+          onChange={(e) => setSensorId(e.target.value)}
+        >
+          {sensors.map((s) => (
+            <MenuItem key={s._id} value={s._id}>
+              {s.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </Stack>
+
+      {/* Sensor Values */}
+      {selectedSensorValue ? (
+        <Stack direction="row" spacing={1} mt={1.5}>
+          <Chip
             size="small"
-            value={sensorId}
-            onChange={(e) => setSensorId(e.target.value)}
-          >
-            {sensors.map((s) => (
-              <MenuItem key={s._id} value={s._id}>
-                {s.name}
-              </MenuItem>
-            ))}
-          </Select>
+            variant="outlined"
+            label={`Temp: ${selectedSensorValue.temperature ?? "N/A"}°C`}
+          />
+          <Chip
+            size="small"
+            variant="outlined"
+            label={`Humidity: ${selectedSensorValue.humidity ?? "N/A"}%`}
+          />
         </Stack>
-
-        {selectedSensorValue ? (
-          <Stack direction="row" spacing={1} mt={1.5}>
-            <Chip label={`Temp: ${selectedSensorValue.temperature}°C`} />
-            <Chip label={`Humidity: ${selectedSensorValue.humidity}%`} />
-          </Stack>
-        ) : (
-          <Typography variant="caption" mt={1}>
-            Sensor data not available
-          </Typography>
-        )}
-      </Box>
-    </div>
+      ) : (
+        <Typography variant="caption" color="text.secondary" mt={1}>
+          sensor data is not availa
+        </Typography>
+      )}
+    </Box>
   );
 }
+
+
+
+
+
+
+
+
+
+// import { useEffect, useState } from "react";
+// import { useDispatch, useSelector } from "react-redux";
+// import Swal from "sweetalert2";
+
+// import {
+//   Box,
+//   Typography,
+//   Chip,
+//   Stack,
+//   Select,
+//   MenuItem,
+//   Divider,
+// } from "@mui/material";
+
+// import {
+//   setAcAuto,
+//   setAcManual,
+//   fetchRackClusterMean,
+// } from "../slices/rackClusterSlice";
+
+// export default function RackDetailsPanel({ rack, clusterId }) {
+//   const dispatch = useDispatch();
+
+//   /* ------------------ SAFETY ------------------ */
+//   if (!rack) {
+//     return (
+//       <Box p={2}>
+//         <Typography variant="body2" color="text.secondary">
+//           Select a rack to view details
+//         </Typography>
+//       </Box>
+//     );
+//   }
+
+//   /* ------------------ OLD RACK DATA ------------------ */
+//   const {
+//     name,
+//     hub,
+//     row,
+//     col,
+//     tempA,
+//     humiA,
+//     sensors = [],
+//     sensorValues = [],
+//   } = rack;
+
+//   const [sensorId, setSensorId] = useState("");
+
+//   useEffect(() => {
+//     if (sensors.length) setSensorId(sensors[0]._id);
+//   }, [sensors]);
+
+//   const selectedSensorValue = sensorValues.find(
+//     (sv) => sv.sensorId === sensorId
+//   );
+
+//   /* ------------------ AC CONTROL ------------------ */
+//   const meanDetail = useSelector((s) => s.rackCluster?.meanDetail);
+//   const acLoading = useSelector((s) => s.rackCluster?.loading?.acControl);
+
+//   const [autoEnabled, setAutoEnabled] = useState(false);
+//   const [manualOn, setManualOn] = useState(false);
+//   const [busy, setBusy] = useState(false);
+
+//   useEffect(() => {
+//     if (!clusterId) return;
+//     dispatch(fetchRackClusterMean(clusterId));
+//   }, [clusterId]);
+
+//   useEffect(() => {
+//     setAutoEnabled(!!meanDetail?.acControl?.enabled);
+//     setManualOn(!!meanDetail?.acControl?.manualStatus);
+//   }, [meanDetail]);
+
+//   const handleAutoToggle = async (e) => {
+//     const enabled = e.target.checked;
+//     setBusy(true);
+//     try {
+//       await dispatch(setAcAuto({ clusterId, enabled })).unwrap();
+//       setAutoEnabled(enabled);
+//       if (enabled) setManualOn(false);
+//     } catch (err) {
+//       Swal.fire("Error", String(err), "error");
+//     } finally {
+//       setBusy(false);
+//     }
+//   };
+
+//   const handleManual = async (status) => {
+//     if (autoEnabled) return;
+//     setBusy(true);
+//     try {
+//       await dispatch(setAcManual({ clusterId, status })).unwrap();
+//       setManualOn(status);
+//     } catch (err) {
+//       Swal.fire("Error", String(err), "error");
+//     } finally {
+//       setBusy(false);
+//     }
+//   };
+
+//   /* ------------------ UI ------------------ */
+//   return (
+//     <div className="">
+
+//  <div className="mb-4 p-3 bg-white  rounded-lg">
+//         <div className="flex justify-between items-center">
+//           <Typography fontWeight={600}>AC Control</Typography>
+
+//           <label className="flex items-center gap-2">
+//             <input
+//               type="checkbox"
+//               checked={autoEnabled}
+//               disabled={busy || acLoading}
+//               onChange={handleAutoToggle}
+//             />
+//             AUTO
+//           </label>
+
+//           <div className="flex gap-1">
+//             <button
+//               disabled={autoEnabled}
+//               onClick={() => handleManual(true)}
+//               className={`px-3 py-1 rounded ${
+//                 manualOn ? "bg-red-500 text-white" : "border"
+//               }`}
+//             >
+//               ON
+//             </button>
+
+//             <button
+//               disabled={autoEnabled}
+//               onClick={() => handleManual(false)}
+//               className={`px-3 py-1 rounded ${
+//                 !manualOn ? "bg-gray-400 text-white" : "border"
+//               }`}
+//             >
+//               OFF
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+    
+    
+
+//       {/* Existing Rack UI */}
+//       <Box p={2.5} sx={{ borderRadius: 2, backgroundColor: "#ffffffc5" }}>
+//         <div className="flex gap-3">
+//           <img src="/Server.svg" className="h-20" />
+//           <Stack>
+//             <Typography>{name}</Typography>
+//             <Typography variant="caption">
+//               {hub?.name} • {row}/{col}
+//             </Typography>
+//           </Stack>
+//         </div>
+
+//         <Divider sx={{ my: 1.5 }} />
+
+//         <Stack spacing={0.5}>
+//           <Typography variant="caption">Sensor</Typography>
+//           <Select
+//             size="small"
+//             value={sensorId}
+//             onChange={(e) => setSensorId(e.target.value)}
+//           >
+//             {sensors.map((s) => (
+//               <MenuItem key={s._id} value={s._id}>
+//                 {s.name}
+//               </MenuItem>
+//             ))}
+//           </Select>
+//         </Stack>
+
+//         {selectedSensorValue ? (
+//           <Stack direction="row" spacing={1} mt={1.5}>
+//             <Chip label={`Temp: ${selectedSensorValue.temperature}°C`} />
+//             <Chip label={`Humidity: ${selectedSensorValue.humidity}%`} />
+//           </Stack>
+//         ) : (
+//           <Typography variant="caption" mt={1}>
+//             Sensor data not available
+//           </Typography>
+//         )}
+//       </Box>
+//     </div>
+//   );
+// }

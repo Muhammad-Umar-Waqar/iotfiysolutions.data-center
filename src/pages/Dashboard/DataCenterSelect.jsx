@@ -137,6 +137,217 @@
 
 
 
+// // src/components/DataCenterSelect.jsx
+// import * as React from "react";
+// import { useSelector } from "react-redux";
+// import FormControl from "@mui/material/FormControl";
+// import InputLabel from "@mui/material/InputLabel";
+// import MenuItem from "@mui/material/MenuItem";
+// import Select from "@mui/material/Select";
+// import CircularProgress from "@mui/material/CircularProgress";
+
+// export default function DataCenterSelect({
+//   value = "",
+//   onChange,
+//   label = "Data Center",
+//   className = "",
+//   size = "small",
+// }) {
+//   const { DataCenters = [], loading = {} } = useSelector(
+//     (s) => s.DataCenter || {}
+//   );
+
+//   const isLoading = Boolean(loading.fetch || loading.fetchAll);
+
+//   return (
+//     <FormControl
+//       size={size}
+//       fullWidth
+//       className={className}
+//       disabled={isLoading}
+//       // sx={{
+//       //   "& .MuiOutlinedInput-root": {
+//       //     borderRadius: "24px", // 👈 rounded-3xl
+//       //   },
+//       // }}
+
+//       sx={{
+//         "& .MuiOutlinedInput-root": {
+//           borderRadius: "24px", // match DataCenterSelect rounded
+//         },
+//       }}
+//     >
+//       <InputLabel id="datacenter-select-label">
+//         {label}
+//       </InputLabel>
+
+//       <Select
+//         labelId="datacenter-select-label"
+//         value={value || ""}
+//         label={label}
+//         onChange={(e) => onChange?.(String(e.target.value))}
+//         renderValue={(selected) => {
+//           if (!selected) return isLoading ? "Loading..." : "Select Data Center";
+//           const dc = DataCenters.find(
+//             (d) => String(d._id) === String(selected)
+//           );
+//           return dc?.name || "Select Data Center";
+//         }}
+
+//         sx={{
+//           "& .MuiOutlinedInput-root": {
+//             borderRadius: "24px", // match DataCenterSelect rounded
+//           },
+//         }}
+
+
+
+//         MenuProps={{
+//           PaperProps: {
+//             sx: {
+//               borderRadius: "16px",
+//               mt: 1,
+//               maxHeight: "37vh",
+//             },
+//           },
+//         }}
+//       >
+//         {isLoading && (
+//           <MenuItem disabled>
+//             <CircularProgress size={16} sx={{ mr: 1 }} />
+//             Loading...
+//           </MenuItem>
+//         )}
+
+//         {!isLoading && DataCenters.length === 0 && (
+//           <MenuItem disabled>No Data Centers</MenuItem>
+//         )}
+
+//         {!isLoading &&
+//           DataCenters.map((dc) => (
+//             <MenuItem key={dc._id} value={String(dc._id)}>
+//               {dc.name}
+//             </MenuItem>
+//           ))}
+//       </Select>
+//     </FormControl>
+//   );
+// }
+
+
+
+
+
+// // src/components/DataCenterSelect.jsx
+// import * as React from "react";
+// import { useSelector } from "react-redux";
+
+// import FormControl from "@mui/material/FormControl";
+// import InputLabel from "@mui/material/InputLabel";
+// import MenuItem from "@mui/material/MenuItem";
+// import Select from "@mui/material/Select";
+// import CircularProgress from "@mui/material/CircularProgress";
+// import { useStore } from "../../contexts/storecontexts";
+
+// export default function DataCenterSelect({
+//   value = "",
+//   onChange,
+//   label = "Data Center",
+//   className = "",
+//   size = "small",
+// }) {
+//   const { DataCenters = [], loading = {} } = useSelector((s) => s.DataCenter || {});
+//   const { user: currentUser } = useStore();
+
+//   const isLoading = Boolean(loading.fetch || loading.fetchAll);
+
+//   // helper - compute option id & label robustly
+//   const getOptionId = (dc) => {
+//     if (!dc) return "";
+//     // manager/user should prefer nested dataCenterId
+//     if (currentUser?.role === "manager" || currentUser?.role === "user") {
+//       // nested populated object
+//       if (dc.dataCenterId && typeof dc.dataCenterId === "object") return dc.dataCenterId._id || dc.dataCenterId.id || "";
+//       // nested string id
+//       if (dc.dataCenterId && typeof dc.dataCenterId === "string") return dc.dataCenterId;
+//       // fallback to top-level
+//       return dc._id || "";
+//     }
+//     // admin: prefer top-level _id (full datacenter objects)
+//     return dc._id || (dc.dataCenterId && (dc.dataCenterId._id || dc.dataCenterId)) || "";
+//   };
+
+//   const getOptionName = (dc) => {
+//     if (!dc) return "";
+//     return (dc.dataCenterId && (dc.dataCenterId.name || dc.name)) || dc.name || "";
+//   };
+
+//   // normalized options array
+//   const options = React.useMemo(() => {
+//     if (!Array.isArray(DataCenters)) return [];
+//     const map = new Map();
+//     return DataCenters.map((dc) => {
+//       const id = getOptionId(dc);
+//       const name = getOptionName(dc);
+//       if (!id) return null;
+//       if (map.has(id)) return null;
+//       map.set(id, true);
+//       return { id, name };
+//     }).filter(Boolean);
+//   }, [DataCenters, currentUser]);
+
+//   return (
+//     <FormControl
+//       size={size}
+//       fullWidth
+//       className={className}
+//       disabled={isLoading}
+//     >
+//       <InputLabel id="datacenter-select-label">{label}</InputLabel>
+
+//       <Select
+//         labelId="datacenter-select-label"
+//         value={value || ""}
+//         label={label}
+//         onChange={(e) => onChange?.(String(e.target.value))}
+//         renderValue={(selected) => {
+//           if (!selected) return isLoading ? "Loading..." : "Select Data Center";
+//           const found = options.find((o) => String(o.id) === String(selected));
+//           return found?.name || "Select Data Center";
+//         }}
+//         MenuProps={{
+//           PaperProps: { sx: { borderRadius: "24px", mt: 1, maxHeight: "37vh" } },
+//         }}
+//         sx={{ "& .MuiOutlinedInput-root": { borderRadius: "24px" } }}
+//       >
+//         {isLoading && (
+//           <MenuItem disabled>
+//             <CircularProgress size={16} sx={{ mr: 1 }} />
+//             Loading...
+//           </MenuItem>
+//         )}
+
+//         {!isLoading && options.length === 0 && <MenuItem disabled>No Data Centers</MenuItem>}
+
+//         {!isLoading &&
+//           options.map((opt) => (
+//             <MenuItem key={opt.id} value={String(opt.id)}>
+//               {opt.name}
+//             </MenuItem>
+//           ))}
+//       </Select>
+//     </FormControl>
+//   );
+// }
+
+
+
+
+
+
+
+
+
 // src/components/DataCenterSelect.jsx
 import * as React from "react";
 import { useSelector } from "react-redux";
@@ -145,6 +356,7 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useStore } from "../../contexts/storecontexts";
 
 export default function DataCenterSelect({
   value = "",
@@ -153,65 +365,85 @@ export default function DataCenterSelect({
   className = "",
   size = "small",
 }) {
-  const { DataCenters = [], loading = {} } = useSelector(
-    (s) => s.DataCenter || {}
-  );
+  const { DataCenters = [], loading = {} } = useSelector((s) => s.DataCenter || {});
+  const { user: currentUser } = useStore();
 
   const isLoading = Boolean(loading.fetch || loading.fetchAll);
 
+  // helper - compute option id & label robustly
+  const getOptionId = (dc) => {
+    if (!dc) return "";
+    // manager/user should prefer nested dataCenterId
+    if (currentUser?.role === "manager" || currentUser?.role === "user") {
+      // nested populated object
+      if (dc.dataCenterId && typeof dc.dataCenterId === "object") return dc.dataCenterId._id || dc.dataCenterId.id || "";
+      // nested string id
+      if (dc.dataCenterId && typeof dc.dataCenterId === "string") return dc.dataCenterId;
+      // fallback to top-level
+      return dc._id || "";
+    }
+    // admin: prefer top-level _id (full datacenter objects)
+    return dc._id || (dc.dataCenterId && (dc.dataCenterId._id || dc.dataCenterId)) || "";
+  };
+
+  const getOptionName = (dc) => {
+    if (!dc) return "";
+    return (dc.dataCenterId && (dc.dataCenterId.name || dc.name)) || dc.name || "";
+  };
+
+  // normalized options array
+  const options = React.useMemo(() => {
+    if (!Array.isArray(DataCenters)) return [];
+    const map = new Map();
+    return DataCenters.map((dc) => {
+      const id = getOptionId(dc);
+      const name = getOptionName(dc);
+      if (!id) return null;
+      if (map.has(id)) return null;
+      map.set(id, true);
+      return { id, name };
+    }).filter(Boolean);
+  }, [DataCenters, currentUser]);
+
   return (
-    <FormControl
-      size={size}
-      fullWidth
-      className={className}
-      disabled={isLoading}
-      // sx={{
-      //   "& .MuiOutlinedInput-root": {
-      //     borderRadius: "24px", // 👈 rounded-3xl
-      //   },
-      // }}
+    <FormControl size={size} fullWidth className={className} disabled={isLoading}>
+      <InputLabel id="datacenter-select-label">{label}</InputLabel>
 
-      sx={{
-        "& .MuiOutlinedInput-root": {
-          borderRadius: "24px", // match DataCenterSelect rounded
-        },
-      }}
-    >
-      <InputLabel id="datacenter-select-label">
-        {label}
-      </InputLabel>
-
-      <Select
+      {/* <Select
         labelId="datacenter-select-label"
         value={value || ""}
         label={label}
         onChange={(e) => onChange?.(String(e.target.value))}
         renderValue={(selected) => {
           if (!selected) return isLoading ? "Loading..." : "Select Data Center";
-          const dc = DataCenters.find(
-            (d) => String(d._id) === String(selected)
-          );
-          return dc?.name || "Select Data Center";
+          const found = options.find((o) => String(o.id) === String(selected));
+          return found?.name || "Select Data Center";
         }}
-
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "24px", // match DataCenterSelect rounded
-          },
-        }}
-
-
-
         MenuProps={{
-          PaperProps: {
-            sx: {
-              borderRadius: "16px",
-              mt: 1,
-              maxHeight: "37vh",
-            },
-          },
+          PaperProps: { sx: { borderRadius: "16px", mt: 1, maxHeight: "37vh" } },
         }}
-      >
+        sx={{ "& .MuiOutlinedInput-root": { borderRadius: "24px" } }}
+      > */}
+
+      <Select
+  labelId="datacenter-select-label"
+  value={value || ""}
+  label={label}
+  onChange={(e) => onChange?.(String(e.target.value))}
+  renderValue={(selected) => {
+    if (!selected) return isLoading ? "Loading..." : "Select Data Center";
+    const found = options.find((o) => String(o.id) === String(selected));
+    return found?.name || "Select Data Center";
+  }}
+  MenuProps={{
+    PaperProps: { sx: { borderRadius: "24px", mt: 1, maxHeight: "37vh" } },
+  }}
+  sx={{
+    "& .MuiOutlinedInput-notchedOutline": {
+      borderRadius: "24px",
+    },
+  }}
+>
         {isLoading && (
           <MenuItem disabled>
             <CircularProgress size={16} sx={{ mr: 1 }} />
@@ -219,14 +451,12 @@ export default function DataCenterSelect({
           </MenuItem>
         )}
 
-        {!isLoading && DataCenters.length === 0 && (
-          <MenuItem disabled>No Data Centers</MenuItem>
-        )}
+        {!isLoading && options.length === 0 && <MenuItem disabled>No Data Centers</MenuItem>}
 
         {!isLoading &&
-          DataCenters.map((dc) => (
-            <MenuItem key={dc._id} value={String(dc._id)}>
-              {dc.name}
+          options.map((opt) => (
+            <MenuItem key={opt.id} value={String(opt.id)}>
+              {opt.name}
             </MenuItem>
           ))}
       </Select>

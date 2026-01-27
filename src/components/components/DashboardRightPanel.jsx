@@ -239,6 +239,7 @@ import {
 import { fetchRackById } from "../../slices/rackSlice";
 import { setSelectedRackId, markContextFetched, setSelectedRackClusterId } from "../../slices/uiSlice";
 import RackDetailsPanel from "../../pages/RackDetailsPanel";  // new component (see below)
+import ACControl from "./ACControl";
 
 export default function DashboardRightPanel({
   selectedRackId = null,
@@ -279,20 +280,51 @@ export default function DashboardRightPanel({
   const dataCenters = useSelector((s) => s.DataCenter?.DataCenters || []);
 
   
-    const getEffectiveDataCenterId = (maybeAssignedId) => {
-  if (!maybeAssignedId) return null;
+//     const getEffectiveDataCenterId = (maybeAssignedId) => {
+//   if (!maybeAssignedId) return null;
 
-  const item = dataCenters.find((d) => String(d._id) === String(maybeAssignedId));
-  if (!item) return maybeAssignedId; // fallback, maybe real ID already
+//   const item = dataCenters.find((d) => String(d._id) === String(maybeAssignedId));
+//   if (!item) return maybeAssignedId; // fallback, maybe real ID already
 
-  // role-based logic: user/manager -> dataCenterId, admin -> _id
-  if (user?.role === "user" || user?.role === "manager") {
-    return String(item.dataCenterId?._id ?? item.dataCenterId);
+//   // role-based logic: user/manager -> dataCenterId, admin -> _id
+//   if (user?.role === "user" || user?.role === "manager") {
+//     return String(item.dataCenterId?._id ?? item.dataCenterId);
+//   }
+
+//   // admin case
+//   return String(item._id);
+// };
+
+
+
+
+
+// in Dashboard.jsx (replace existing getEffectiveDataCenterId)
+const getEffectiveDataCenterId = (maybeId) => {
+  if (!maybeId) return null;
+
+  // if maybeId is already the nested id present in any entry -> return it (already real dc id)
+  const foundByNested = dataCenters.find(
+    (d) => String(d?.dataCenterId?._id || d?.dataCenterId) === String(maybeId)
+  );
+  if (foundByNested) return String(maybeId);
+
+  // if maybeId matches a top-level entry._id (this could be assignment id or admin dc id)
+  const foundTop = dataCenters.find((d) => String(d._id) === String(maybeId));
+  if (foundTop) {
+    // for non-admin roles prefer nested dataCenterId (if present), otherwise top-level
+    if (user?.role === "manager" || user?.role === "user") {
+      return String(foundTop.dataCenterId?._id ?? foundTop.dataCenterId ?? foundTop._id);
+    }
+    // admin: top-level id is the real dc id
+    return String(foundTop._id);
   }
 
-  // admin case
-  return String(item._id);
+  // fallback: just return maybeId (could already be the real dc _id)
+  return String(maybeId);
 };
+
+
 
 const realDcId = getEffectiveDataCenterId(effectiveDc);
 
@@ -426,7 +458,11 @@ const realDcId = getEffectiveDataCenterId(effectiveDc);
   return (
     <div className={`dashboard-right-panel shadow-sm flex flex-col  h-full overflow-y-auto custom-scrollbar p-4 lg:p-4 border-l border-[#E5E7EB]/40 bg-[#078d860c] flex-shrink-0 ${className}`}>
       {/* Top: Cluster Means */}
-      <div className="mb-4 bg-[#0F5EA8]
+     
+    {effectiveCluster && <ACControl clusterId={effectiveCluster}/>
+      
+    }
+     <div className="mb-4 bg-[#0F5EA8]
 rounded-3xl">
         <div className=" text-white px-4 py-5">
   <div className="grid grid-cols-4 items-center text-sm font-medium ">
@@ -472,7 +508,7 @@ rounded-3xl">
           noData={!selectedRack}
           closeIcon={closeIcon}
           onClose={onClose}
-          clusterId={effectiveCluster}
+          
         />
       </div>
     </div>

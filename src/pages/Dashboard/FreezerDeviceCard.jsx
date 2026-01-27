@@ -528,7 +528,7 @@ const thermometerColor = hasRefrigeratorAlert
 
               {/* Temperature Display - Below Freezer Text */}
               <span className={`freezer-temp-value ${isSelected ? 'text-white/80' : 'text-[#2F2E2E]/86'} responsive-value ${hasAnyAlert && "text-white/80"}`}>
-                {displayFreezerTemp}<span className="font-extralight">°C</span>
+                {displayAmbientTemp}<span className="font-extralight">°C</span>
               </span>
             </div>
           </div>
@@ -548,7 +548,7 @@ const thermometerColor = hasRefrigeratorAlert
 
               {/* Temperature Display - Below Freezer Text */}
               <span className={`freezer-temp-value ${isSelected ? 'text-white/80' : 'text-[#2F2E2E]/86'} responsive-value ${hasAnyAlert && "text-white/80"}`}>
-                {displayAmbientTemp}<span className="font-extralight">°C</span>
+                {displayFreezerTemp}<span className="font-extralight">°C</span>
               </span>
             </div>
           </div>

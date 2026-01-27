@@ -297,7 +297,9 @@ export const setAcAuto = createAsyncThunk(
         body: JSON.stringify({ clusterId, enabled }),
       });
       const data = await res.json();
+      
       if (!res.ok) return rejectWithValue(data.message || "Failed to set auto");
+      console.log("SETACMANUAL>", res)
       return data.data ?? data;
     } catch (err) {
       return rejectWithValue(err.message || "Network error");
@@ -322,6 +324,7 @@ export const setAcManual = createAsyncThunk(
       });
       const data = await res.json();
       if (!res.ok) return rejectWithValue(data.message || "Failed to set manual");
+      console.log("SETACMANUAL>", res)
       return data;
     } catch (err) {
       return rejectWithValue(err.message || "Network error");

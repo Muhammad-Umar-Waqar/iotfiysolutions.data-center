@@ -1203,6 +1203,9 @@ const UserList = ({ onUserSelect, selectedUser }) => {
       });
     }
   };
+  
+
+  
 
   const handleRowClick = (user, e) => {
     e.stopPropagation();

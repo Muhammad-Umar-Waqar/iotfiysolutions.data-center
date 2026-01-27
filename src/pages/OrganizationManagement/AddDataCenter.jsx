@@ -207,6 +207,11 @@
 // };
 
 
+
+
+
+
+
 // Fixing UI + Trying to add Move Next on Save
 // export default AddDataCenter;
 // src/pages/DataCenter/AddDataCenter.jsx
@@ -380,6 +385,7 @@ const AddDataCenter = ({ onNext, onBack }) => {
         </p>
 
         <div className="space-y-4 max-w-sm mx-auto w-full">
+          
           <InputField
             id="data_center_name"
             name="data_center_name"
@@ -407,14 +413,14 @@ const AddDataCenter = ({ onNext, onBack }) => {
       </div>
 
       {/* ======= NEW FOOTER (NEXT / BACK) ======= */}
-      <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between items-center">
-        <button
+      <div className="mt-6 pt-4 border-t border-gray-200 flex justify-end items-center">
+        {/* <button
           type="button"
           onClick={() => onBack?.()}
           className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
         >
           Back
-        </button>
+        </button> */}
 
         <button
           type="button"

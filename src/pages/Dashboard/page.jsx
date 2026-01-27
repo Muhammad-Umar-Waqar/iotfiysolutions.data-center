@@ -2633,24 +2633,73 @@ const realDcId  = getEffectiveDataCenterId(selectedDcId);
 
 
   // ---------- 2) Resolve default DataCenter when list is available ----------
-  useEffect(() => {
-    if (!dataCenters || dataCenters.length === 0) return;
+  // useEffect(() => {
+  //   if (!dataCenters || dataCenters.length === 0) return;
 
-    // if selection already valid, keep it
-    if (selectedDcId && dataCenters.find((d) => String(d._id) === String(selectedDcId))) return;
+  //   // if selection already valid, keep it
+  //   if (selectedDcId && dataCenters.find((d) => String(d._id) === String(selectedDcId))) return;
 
-    // prefer URL param ?dc=...
-    const sp = new URLSearchParams(location.search);
-    const urlDc = sp.get("dc");
-    const found = urlDc && dataCenters.find((d) => String(d._1 ?? d._id) === String(urlDc)); // defensive
-    const chosen = found ? found._id : dataCenters[0]._id;
+  //   // prefer URL param ?dc=...
+  //   const sp = new URLSearchParams(location.search);
+  //   const urlDc = sp.get("dc");
+  //   const found = urlDc && dataCenters.find((d) => String(d._1 ?? d._id) === String(urlDc)); // defensive
+  //   const chosen = found ? found._id : dataCenters[0]._id;
 
-    dispatch(setSelectedDataCenterId(String(chosen)));
-    // push URL param so refresh/deep link works
-    sp.set("dc", String(chosen));
-    navigate(`${location.pathname}?${sp.toString()}`, { replace: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataCenters, dispatch]); // intentionally minimal deps; selection is idempotent
+  //   dispatch(setSelectedDataCenterId(String(chosen)));
+  //   // push URL param so refresh/deep link works
+  //   sp.set("dc", String(chosen));
+  //   navigate(`${location.pathname}?${sp.toString()}`, { replace: true });
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [dataCenters, dispatch]); // intentionally minimal deps; selection is idempotent
+
+
+
+
+  // ---------- 2) Resolve default DataCenter when list is available ----------
+useEffect(() => {
+  if (!dataCenters || dataCenters.length === 0) return;
+
+  // if selection already valid, keep it (compare to both top-level and nested ids)
+  if (selectedDcId) {
+    const stillValid = dataCenters.some(
+      (d) =>
+        String(d._id) === String(selectedDcId) ||
+        String(d?.dataCenterId?._id || d?.dataCenterId) === String(selectedDcId)
+    );
+    if (stillValid) return;
+  }
+
+  const sp = new URLSearchParams(location.search);
+  const urlDc = sp.get("dc");
+
+  // find item by top-level or nested id
+  const found = urlDc
+    ? dataCenters.find(
+        (d) =>
+          String(d._id) === String(urlDc) ||
+          String(d?.dataCenterId?._id || d?.dataCenterId) === String(urlDc)
+      )
+    : null;
+
+  // choose first option's effective id if url not found
+  const pick = found
+    ? // compute option id for selection (role-aware)
+      (user?.role === "admin" ? found._id : (found.dataCenterId?._id || found.dataCenterId || found._id))
+    : // fallback to first loaded option (role-aware)
+      (user?.role === "admin"
+        ? dataCenters[0]._id
+        : (dataCenters[0]?.dataCenterId?._id || dataCenters[0]?.dataCenterId || dataCenters[0]._id));
+
+  if (!pick) return;
+
+  dispatch(setSelectedDataCenterId(String(pick)));
+  sp.set("dc", String(pick));
+  navigate(`${location.pathname}?${sp.toString()}`, { replace: true });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [dataCenters, dispatch]);
+
+
+
 
   // ---------- 3) When selected DC changes: fetch clusters and racks by DC ----------
   // useEffect(() => {

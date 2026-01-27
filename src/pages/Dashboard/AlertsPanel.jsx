@@ -658,10 +658,10 @@ const realDcId = useMemo(
             <AlertList
               title={
                 effectiveCluster
-                  ? "Battery Alerts — Cluster"
-                  : "Battery Alerts"
+                  ? "Humidity Alerts — Cluster"
+                  : "Humidity Alerts"
               }
-              iconSrc="/low-battery-icon.png"
+              iconSrc="/card-humidity-icon.svg"
               items={batteryItems}
             />
           )}
