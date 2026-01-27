@@ -236,7 +236,7 @@ export default function AckitList() {
           <>
             <th className="py-2 px-4 font-bold text-gray-800">Name</th>
             <th className="py-2 px-4 text-center">Condition</th>
-            <th className="py-2 px-4 w-[120px] text-center">Actions</th>
+            <th className="py-2 px-4  text-center">Actions</th>
           </>
         }
       >

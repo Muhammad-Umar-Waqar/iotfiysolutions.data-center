@@ -2899,10 +2899,10 @@ useEffect(() => {
     <div className="flex w-full flex-row h-full font-inter rounded-md bg-[#F5F6FA]">
       <div className="flex-1 min-w-0 space-y-4 overflow-y-auto custom-scrollbar dashboard-main-content bg-white shadow-sm border border-[#E5E7EB]/30 p-3 lg:py-none lg:px-3">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center gap-1">
           {
             !isDesktop && <div>
-              <img src="/logo-half.png" alt="LOGO" className="w-auto h-[40px]" />
+              <img src="/logo-half.png" alt="LOGO" className="w-auto h-[40px] px-2 " />
             </div>
           }
           <div className="flex-1 min-w-[6rem] max-w-[10rem] lg:min-w-[11rem]  lg:max-w-[10rem] xl:max-w-[20rem]  ">

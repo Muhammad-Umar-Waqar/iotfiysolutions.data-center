@@ -719,8 +719,9 @@
 /* hover/focus */
 .rack-circle:hover,
 .rack-circle:focus {
-  transform: translateY(-3px);
-  outline: none;
+  /* transform: translateY(3px);
+  transform: translatex(3px); */
+  outline: rgba(0, 0, 255, 0.329);
 }
 
 /* scrollbar small */

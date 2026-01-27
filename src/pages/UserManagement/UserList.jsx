@@ -1291,7 +1291,88 @@ const handleEditOpen = (user) => {
   const displayUsers = Users || [];
 
   const renderListMarkup = () => (
-    <div className="ListPage user-list-container  bg-white  rounded-xl lg:rounded-r-none lg:rounded-l-xl shadow-sm w-full h-full border border-[#E5E7EB]">
+    // <div className="ListPage user-list-container  bg-white  rounded-xl lg:rounded-r-none lg:rounded-l-xl shadow-sm w-full h-full border border-[#E5E7EB]">
+    //   {isDesktop ? (
+    //     <h1 className="organization-list-title font-semibold text-gray-800 mb-4 p-2">User Management</h1>
+    //   ) : (
+    //     <>
+    //       <div className="flex justify-end">
+    //         <IconButton onClick={() => setDrawerOpen(false)} edge="start" aria-label="close-details" size="small">
+    //           <CloseIcon />
+    //         </IconButton>
+    //       </div>
+    //     </>
+    //   )}
+
+    //   <div className="mb-4">
+    //     <h2 className="user-list-header text-center font-semibold text-gray-800">User List</h2>
+    //     <div className="mx-auto mt-2 h-px w-4/5 bg-[#2563EB]/40"></div>
+    //   </div>
+
+    //   {loading ? (
+    //     <table className="w-full table-auto text-left">
+    //       <tbody aria-busy={loading} role="status">
+    //         <TableSkeleton rows={4} showNumber={true} showActions={true} status={true} role={currentUser?.role} />
+    //       </tbody>
+    //     </table>
+    //   ) : displayUsers.length === 0 ? (
+    //     <div className="p-6 text-center text-gray-600">No users found.</div>
+    //   ) : (
+    //     <div className="user-table-scroll h-[80vh] sm:h-[77vh] overflow-y-auto md:pr-1">
+    //       <table className="w-full table-auto text-left">
+    //         <thead>
+    //           <tr className="bg-gray-100">
+    //             <th className="user-table-header py-2 px-4 font-bold text-gray-800 text-left">Name / Email</th>
+    //             {currentUser?.role === "admin" && <th className="user-table-header py-2 px-4 font-bold text-gray-800 text-right">Status</th>}
+    //             <th className="user-table-header py-2 px-4 text-center">Actions</th>
+    //           </tr>
+    //         </thead>
+    //         <tbody>
+    //           {displayUsers.map((u, index) => (
+    //             <tr
+    //               key={u._id || index}
+    //               className={`border-b border-gray-200 cursor-pointer transition-colors hover:bg-blue-50/60 ${selectedUser?._id === u._id ? "bg-blue-50 border-blue-300" : ""}`}
+    //               onClick={(e) => handleRowClick(u, e)}
+    //             >
+    //               <td className="user-table-cell py-2 sm:py-3 px-2 sm:px-4">
+    //                 <div className="md:font-medium text-xs xs:text-xs sm:text-sm md:text-md">{u.name || u.email}</div>
+    //               </td>
+
+    //               {currentUser?.role === "admin" && (
+    //                 <td className="user-table-cell py-2 sm:py-3 px-2 sm:px-4 text-center">
+    //                   <button
+    //                     onClick={(e) => {
+    //                       e.stopPropagation();
+    //                       handleToggleStatus(u);
+    //                     }}
+    //                     className={`inline-block px-1.5 md:px-3 py-1 rounded text-xs font-semibold focus:outline-none ${u.isActive ? "bg-green-100 text-green-800 border border-green-300" : "bg-red-100 text-red-800 border border-red-300"}`}
+    //                     title={u.isActive ? "Click to suspend" : "Click to activate"}
+    //                   >
+    //                     {u.isActive ? "Active" : "Inactive"}
+    //                   </button>
+    //                 </td>
+    //               )}
+
+    //               <td className="user-table-cell py-2 sm:py-3 px-2 sm:px-4">
+    //                 <div className="flex justify-center gap-2 sm:gap-3" onClick={(e) => e.stopPropagation()}>
+    //                   <button   disabled={loading} onClick={() => handleEditOpen(u)}  className="cursor-pointer user-action-btn rounded-full border border-green-500/50 bg-white flex items-center justify-center hover:bg-green-50 w-8 h-8">
+    //                     <Pencil className="text-green-600 user-action-icon " size={16} />
+    //                   </button>
+
+    //                   <button onClick={() => handleDeleteOpen(u)} className="cursor-pointer user-action-btn rounded-full border border-red-500/50 bg-white flex items-center justify-center hover:bg-red-50 w-8 h-8">
+    //                     <Trash className="text-red-600 user-action-icon " size={16} />
+    //                   </button>
+    //                 </div>
+    //               </td>
+    //             </tr>
+    //           ))}
+    //         </tbody>
+    //       </table>
+    //     </div>
+    //   )}
+    // </div>
+
+     <div className={`ListPage user-list-container bg-white rounded-xl lg:rounded-r-none lg:rounded-l-xl shadow-sm w-full h-full border border-[#E5E7EB] flex flex-col h-full min-h-0 `}>
       {isDesktop ? (
         <h1 className="organization-list-title font-semibold text-gray-800 mb-4 p-2">User Management</h1>
       ) : (
@@ -1318,7 +1399,8 @@ const handleEditOpen = (user) => {
       ) : displayUsers.length === 0 ? (
         <div className="p-6 text-center text-gray-600">No users found.</div>
       ) : (
-        <div className="user-table-scroll h-[80vh] sm:h-[77vh] overflow-y-auto md:pr-1">
+        // IMPORTANT: use flex-1 min-h-0 so this will take remaining height and scroll inside the column
+        <div className="flex-1 min-h-0 overflow-y-auto md:pr-1">
           <table className="w-full table-auto text-left">
             <thead>
               <tr className="bg-gray-100">
@@ -1355,7 +1437,7 @@ const handleEditOpen = (user) => {
 
                   <td className="user-table-cell py-2 sm:py-3 px-2 sm:px-4">
                     <div className="flex justify-center gap-2 sm:gap-3" onClick={(e) => e.stopPropagation()}>
-                      <button   disabled={loading} onClick={() => handleEditOpen(u)}  className="cursor-pointer user-action-btn rounded-full border border-green-500/50 bg-white flex items-center justify-center hover:bg-green-50 w-8 h-8">
+                      <button disabled={loading} onClick={() => handleEditOpen(u)} className="cursor-pointer user-action-btn rounded-full border border-green-500/50 bg-white flex items-center justify-center hover:bg-green-50 w-8 h-8">
                         <Pencil className="text-green-600 user-action-icon " size={16} />
                       </button>
 
@@ -1371,6 +1453,9 @@ const handleEditOpen = (user) => {
         </div>
       )}
     </div>
+
+
+
   );
 
   return (

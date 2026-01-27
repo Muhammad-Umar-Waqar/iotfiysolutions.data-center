@@ -75,6 +75,62 @@
 
 
 
+// import React from "react";
+// import { Check } from "lucide-react";
+
+// export default function InstallationStepper({
+//   steps = [],
+//   activeStep = 0,
+//   unlockedSteps = [],
+//   onStepClick,
+// }) {
+//   return (
+//     <div className="w-full mb-3 w-full mb-3 h-[9vh] ">
+//       <div className="flex items-center px-2">
+//         {steps.map((label, idx) => {
+//           const isUnlocked = unlockedSteps.includes(idx);
+//           const completed = idx < activeStep;
+//           const current = idx === activeStep;
+
+//           return (
+//             <React.Fragment key={idx}>
+//               <button
+//                 disabled={!isUnlocked}
+//                 onClick={() => isUnlocked && onStepClick(idx)}
+//                 className={`w-10 h-10 rounded-full flex items-center justify-center
+//                   ${
+//                     completed
+//                       ? "bg-blue-600 text-white"
+//                       : current
+//                       ? "border-2 border-blue-600 text-blue-600"
+//                       : "border text-gray-400"
+//                   }
+//                   ${!isUnlocked && "opacity-40 cursor-not-allowed"}
+//                 `}
+//               >
+//                 {completed ? <Check size={14} /> : idx + 1}
+//               </button>
+
+//               {idx < steps.length - 1 && (
+//                 <div
+//                   className={`flex-1 h-1 mx-2 ${
+//                     completed ? "bg-blue-600" : "bg-gray-200"
+//                   }`}
+//                 />
+//               )}
+//             </React.Fragment>
+//           );
+//         })}
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+
+
+// src/components/InstallationStepper.jsx
 import React from "react";
 import { Check } from "lucide-react";
 
@@ -82,14 +138,17 @@ export default function InstallationStepper({
   steps = [],
   activeStep = 0,
   unlockedSteps = [],
+  completedSteps = [], // array of indexes
   onStepClick,
 }) {
+  const completedSet = new Set(completedSteps);
+
   return (
-    <div className="w-full mb-3 w-full mb-3 h-[9vh] ">
+    <div className="w-full mb-3 h-[9vh] ">
       <div className="flex items-center px-2">
         {steps.map((label, idx) => {
           const isUnlocked = unlockedSteps.includes(idx);
-          const completed = idx < activeStep;
+          const completed = completedSet.has(idx);
           const current = idx === activeStep;
 
           return (
@@ -107,15 +166,14 @@ export default function InstallationStepper({
                   }
                   ${!isUnlocked && "opacity-40 cursor-not-allowed"}
                 `}
+                title={label}
               >
                 {completed ? <Check size={14} /> : idx + 1}
               </button>
 
               {idx < steps.length - 1 && (
                 <div
-                  className={`flex-1 h-1 mx-2 ${
-                    completed ? "bg-blue-600" : "bg-gray-200"
-                  }`}
+                  className={`flex-1 h-1 mx-2 ${completed ? "bg-blue-600" : "bg-gray-200"}`}
                 />
               )}
             </React.Fragment>
@@ -125,6 +183,8 @@ export default function InstallationStepper({
     </div>
   );
 }
+
+
 
 
 

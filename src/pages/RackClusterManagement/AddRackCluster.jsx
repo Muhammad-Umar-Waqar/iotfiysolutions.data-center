@@ -1579,67 +1579,125 @@ const AddRackCluster = ({ onBack, onFinish }) => {
   const canFinish =
     clusterName.trim() && ackitId && selectedRacks.length > 0;
 
+  // const handleCreateAndFinish = async () => {
+  //   if (!hasFormValue) {
+  //     onFinish?.();
+  //     return;
+  //   }
+
+  //   if (!clusterName.trim()) {
+  //     return Swal.fire("Missing Field", "Cluster name is required", "warning");
+  //   }
+
+  //   if (!ackitId) {
+  //     return Swal.fire("Missing Field", "Please select an AC Kit", "warning");
+  //   }
+
+  //   if (!selectedRacks.length) {
+  //     return Swal.fire("Missing Field", "Select at least one Rack", "warning");
+  //   }
+
+  //   if (!selectedDataCenter?._id) {
+  //     return Swal.fire("Error", "No Data Center selected", "error");
+  //   }
+
+  //   setSubmitting(true);
+
+  //   try {
+  //     const payload = {
+  //       name: clusterName.trim(),
+  //       dataCenterId: selectedDataCenter._id,
+  //       ackitId,
+  //       racks: selectedRacks,
+  //     };
+
+  //     const created = await dispatch(createRackCluster(payload)).unwrap();
+  //     setSelectedRackCluster(created);
+
+  //     setClusterName("");
+  //     setAckitId("");
+  //     setSelectedRacks([]);
+
+  //     dispatch(fetchRackClustersByDataCenter(selectedDataCenter._id));
+
+  //     const result = await Swal.fire({
+  //       icon: "success",
+  //       title: "🎉 Installation Complete!",
+  //       text: "Your rack cluster has been set up successfully.",
+  //       showDenyButton: true,
+  //       confirmButtonText: "Stay on this page",
+  //       denyButtonText: "Go to Step 1",
+  //     });
+
+  //     if (result.isDenied) {
+  //       onFinish?.({ gotoStep: 0 });
+  //     } else {
+  //       onFinish?.();
+  //     }
+  //   } catch (err) {
+  //     Swal.fire("Error", err || "Failed to create Rack Cluster", "error");
+  //   } finally {
+  //     setSubmitting(false);
+  //   }
+  // };
+
+
+
   const handleCreateAndFinish = async () => {
-    if (!hasFormValue) {
-      onFinish?.();
-      return;
-    }
+  if (!hasFormValue) {
+    onFinish?.();
+    return;
+  }
 
-    if (!clusterName.trim()) {
-      return Swal.fire("Missing Field", "Cluster name is required", "warning");
-    }
+  if (!clusterName.trim()) {
+    return Swal.fire("Missing Field", "Cluster name is required", "warning");
+  }
 
-    if (!ackitId) {
-      return Swal.fire("Missing Field", "Please select an AC Kit", "warning");
-    }
+  if (!ackitId) {
+    return Swal.fire("Missing Field", "Please select an AC Kit", "warning");
+  }
 
-    if (!selectedRacks.length) {
-      return Swal.fire("Missing Field", "Select at least one Rack", "warning");
-    }
+  if (!selectedRacks.length) {
+    return Swal.fire("Missing Field", "Select at least one Rack", "warning");
+  }
 
-    if (!selectedDataCenter?._id) {
-      return Swal.fire("Error", "No Data Center selected", "error");
-    }
+  if (!selectedDataCenter?._id) {
+    return Swal.fire("Error", "No Data Center selected", "error");
+  }
 
-    setSubmitting(true);
+  setSubmitting(true);
 
-    try {
-      const payload = {
-        name: clusterName.trim(),
-        dataCenterId: selectedDataCenter._id,
-        ackitId,
-        racks: selectedRacks,
-      };
+  try {
+    const payload = {
+      name: clusterName.trim(),
+      dataCenterId: selectedDataCenter._id,
+      ackitId,
+      racks: selectedRacks,
+    };
 
-      const created = await dispatch(createRackCluster(payload)).unwrap();
-      setSelectedRackCluster(created);
+    const created = await dispatch(createRackCluster(payload)).unwrap();
+    setSelectedRackCluster(created);
 
-      setClusterName("");
-      setAckitId("");
-      setSelectedRacks([]);
+    // reset form
+    setClusterName("");
+    setAckitId("");
+    setSelectedRacks([]);
 
-      dispatch(fetchRackClustersByDataCenter(selectedDataCenter._id));
+    dispatch(fetchRackClustersByDataCenter(selectedDataCenter._id));
 
-      const result = await Swal.fire({
-        icon: "success",
-        title: "🎉 Installation Complete!",
-        text: "Your rack cluster has been set up successfully.",
-        showDenyButton: true,
-        confirmButtonText: "Stay on this page",
-        denyButtonText: "Go to Step 1",
-      });
+    // ✅ directly move forward (no success popup)
+    onFinish?.();
 
-      if (result.isDenied) {
-        onFinish?.({ gotoStep: 0 });
-      } else {
-        onFinish?.();
-      }
-    } catch (err) {
-      Swal.fire("Error", err || "Failed to create Rack Cluster", "error");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  } catch (err) {
+    Swal.fire("Error", err || "Failed to create Rack Cluster", "error");
+  } finally {
+    setSubmitting(false);
+  }
+};
+
+
+
+
 
   return (
     <div className="h-full p-5 AddingPage rounded-xl lg:rounded-l-none lg:rounded-r-xl shadow-sm w-full flex flex-col justify-between bg-[#EEF3F9] border border-[#E5E7EB]">

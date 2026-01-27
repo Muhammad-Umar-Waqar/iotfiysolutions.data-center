@@ -218,6 +218,221 @@
 
 
 
+// // src/pages/AlertsPanel.jsx
+// import React, { useEffect, useMemo } from "react";
+// import { useDispatch, useSelector } from "react-redux";
+// import AlertList from "./AlertList";
+// import "../../styles/pages/Dashboard/dashboard-styles.css";
+// import { useStore } from "../../contexts/storecontexts";
+// import {
+//   fetchAlertsByDataCenter,
+//   fetchAlertsByRackCluster,
+// } from "../../slices/alertsSlice";
+// import { markContextFetched } from "../../slices/uiSlice";
+
+// export default function AlertsPanel({
+//   dataCenterId = null,
+//   rackClusterId = null,
+//   pollInterval = null,
+// }) {
+//   const dispatch = useDispatch();
+//   const { user } = useStore();
+
+//   const ui = useSelector((s) => s.ui || {});
+//   const effectiveDc = dataCenterId || ui.selectedDataCenterId || null;
+//   const effectiveCluster = rackClusterId || ui.selectedRackClusterId || null;
+
+//   /* ----------------------------------------
+//    * INITIAL LOAD DECISION (CRITICAL LOGIC)
+//    * -------------------------------------- */
+//   const isInitialAlertsLoad = useMemo(() => {
+//     if (effectiveCluster) {
+//       return !ui.contextHasFetched?.cluster?.[effectiveCluster];
+//     }
+//     if (effectiveDc) {
+//       return !ui.contextHasFetched?.dc?.[effectiveDc];
+//     }
+//     return true;
+//   }, [effectiveCluster, effectiveDc, ui.contextHasFetched]);
+
+//   /* ----------------------------------------
+//    * SELECT ALERT SOURCE (cluster > dc)
+//    * -------------------------------------- */
+//   const alertsState = useSelector((s) => {
+//     if (effectiveCluster) {
+//       return (
+//         s.alerts?.byRackCluster?.[effectiveCluster] ?? {
+//           loading: false,
+//           racks: [],
+//         }
+//       );
+//     }
+//     if (effectiveDc) {
+//       return (
+//         s.alerts?.byDataCenter?.[effectiveDc] ?? {
+//           loading: false,
+//           racks: [],
+//         }
+//       );
+//     }
+//     return { loading: false, racks: [] };
+//   });
+
+//   const loading = Boolean(alertsState?.loading);
+//   const racks = Array.isArray(alertsState?.racks) ? alertsState.racks : [];
+
+//   /* ----------------------------------------
+//    * FETCH ON MOUNT / DC / CLUSTER CHANGE
+//    * -------------------------------------- */
+//   useEffect(() => {
+//     if (effectiveCluster) {
+//       dispatch(fetchAlertsByRackCluster(effectiveCluster));
+//     } else if (effectiveDc) {
+//       dispatch(fetchAlertsByDataCenter(effectiveDc));
+//     }
+//   }, [effectiveCluster, effectiveDc, dispatch]);
+
+//   /* ----------------------------------------
+//    * POLLING (NO SKELETONS HERE)
+//    * -------------------------------------- */
+//   useEffect(() => {
+//     if (!pollInterval) return;
+
+//     const id = setInterval(() => {
+//       if (effectiveCluster) {
+//         dispatch(fetchAlertsByRackCluster(effectiveCluster));
+//       } else if (effectiveDc) {
+//         dispatch(fetchAlertsByDataCenter(effectiveDc));
+//       }
+//     }, pollInterval);
+
+//     return () => clearInterval(id);
+//   }, [effectiveCluster, effectiveDc, pollInterval, dispatch]);
+
+//   /* ----------------------------------------
+//    * MARK CONTEXT AS FETCHED (LOCK SKELETONS)
+//    * -------------------------------------- */
+//   useEffect(() => {
+//     if (loading) return;
+
+//     if (effectiveCluster) {
+//       dispatch(markContextFetched({ kind: "cluster", id: effectiveCluster }));
+//     } else if (effectiveDc) {
+//       dispatch(markContextFetched({ kind: "dc", id: effectiveDc }));
+//     }
+//   }, [loading, effectiveCluster, effectiveDc, dispatch]);
+
+//   /* ----------------------------------------
+//    * SKELETON RULE
+//    * -------------------------------------- */
+//   const showSkeleton = isInitialAlertsLoad && loading;
+
+//   /* ----------------------------------------
+//    * MAP DATA
+//    * -------------------------------------- */
+//   const maintenanceItems = racks.map((r) => {
+//     const id = r.rackId ?? r._id;
+//     const name = r.rackName ?? `Rack ${id}`;
+//     const devices =
+//       r.totalAlerts ??
+//       ((r.tempA ? 1 : 0) + (r.humiA ? 1 : 0) || 0);
+
+//     const nestedItems = (r.sensors || []).map((s, idx) => ({
+//       id: `${id}-${idx}`,
+//       name: s.sensorName ?? `Sensor ${idx + 1}`,
+//       date: s.updatedAt
+//         ? new Date(s.updatedAt).toLocaleString()
+//         : undefined,
+//     }));
+
+//     return { id, name, devices, nestedItems };
+//   });
+
+//   const batteryItems = racks.map((r) => {
+//     const id = r.rackId ?? r._id;
+//     const name = r.rackName ?? `Rack ${id}`;
+//     const devices = r.batteryAlertCount ?? 0;
+
+//     const nestedItems = (r.batteryAlertDevices || []).map((d, idx) => ({
+//       id: `${id}-b-${idx}`,
+//       name: d.name ?? "Device",
+//       date: d.date,
+//     }));
+
+//     return { id, name, devices, nestedItems };
+//   });
+
+//   const SkeletonList = () => (
+//     <div className="space-y-2">
+//       {Array.from({ length: 4 }).map((_, i) => (
+//         <div
+//           key={i}
+//           className="h-8 bg-gray-200 rounded animate-pulse"
+//         />
+//       ))}
+//     </div>
+//   );
+
+//   /* ----------------------------------------
+//    * RENDER
+//    * -------------------------------------- */
+//   return (
+//     <div className="flex-shrink-0 mb-16 md:mb-auto">
+//       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+//         <div
+//           className="p-2 md:p-4"
+//           style={{ backgroundColor: "#07518D12", borderRadius: 20 }}
+//         >
+//           {showSkeleton ? (
+//             <SkeletonList />
+//           ) : (
+//             <AlertList
+//               title={
+//                 effectiveCluster
+//                   ? "Refrigerator Alerts — Cluster"
+//                   : "Refrigerator Alerts"
+//               }
+//               iconSrc="/freezer-alert-icon.png"
+//               items={maintenanceItems}
+//             />
+//           )}
+//         </div>
+
+//         <div
+//           className="p-2 md:p-4"
+//           style={{ backgroundColor: "#07518D12", borderRadius: 20 }}
+//         >
+//           {showSkeleton ? (
+//             <SkeletonList />
+//           ) : (
+//             <AlertList
+//               title={
+//                 effectiveCluster
+//                   ? "Battery Alerts — Cluster"
+//                   : "Battery Alerts"
+//               }
+//               iconSrc="/low-battery-icon.png"
+//               items={batteryItems}
+//             />
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
 // src/pages/AlertsPanel.jsx
 import React, { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -238,9 +453,44 @@ export default function AlertsPanel({
   const dispatch = useDispatch();
   const { user } = useStore();
 
+    const dataCenters = useSelector((s) => s.DataCenter?.DataCenters || []);
+
+    
+  const getEffectiveDataCenterId = (maybeAssignedId) => {
+  if (!maybeAssignedId) return null;
+
+  const item = dataCenters.find((d) => String(d._id) === String(maybeAssignedId));
+  if (!item) return maybeAssignedId; // fallback, maybe real ID already
+
+  // role-based logic: user/manager -> dataCenterId, admin -> _id
+  if (user?.role === "user" || user?.role === "manager") {
+    console.log("User+Manager")
+    return String(item.dataCenterId?._id ?? item.dataCenterId);
+  }
+
+  // admin case
+  return String(item._id);
+};
+
+
   const ui = useSelector((s) => s.ui || {});
-  const effectiveDc = dataCenterId || ui.selectedDataCenterId || null;
+
+const effectiveDc = dataCenterId || ui.selectedDataCenterId || null;
+const realDcId = useMemo(
+  () => getEffectiveDataCenterId(effectiveDc),
+  [effectiveDc, dataCenters, user?.role]
+);
+
+
+
+
   const effectiveCluster = rackClusterId || ui.selectedRackClusterId || null;
+  // const effectiveDc = dataCenterId || ui.selectedDataCenterId || null;
+
+  // console.log("effectiveDC>", effectiveDc, "effectiveCluster", effectiveCluster)
+  // const realDcId = getEffectiveDataCenterId(effectiveDc);
+  // console.log("realDcId>", realDcId)
+
 
   /* ----------------------------------------
    * INITIAL LOAD DECISION (CRITICAL LOGIC)
@@ -250,7 +500,7 @@ export default function AlertsPanel({
       return !ui.contextHasFetched?.cluster?.[effectiveCluster];
     }
     if (effectiveDc) {
-      return !ui.contextHasFetched?.dc?.[effectiveDc];
+      return !ui.contextHasFetched?.dc?.[realDcId];
     }
     return true;
   }, [effectiveCluster, effectiveDc, ui.contextHasFetched]);
@@ -269,7 +519,7 @@ export default function AlertsPanel({
     }
     if (effectiveDc) {
       return (
-        s.alerts?.byDataCenter?.[effectiveDc] ?? {
+        s.alerts?.byDataCenter?.[realDcId] ?? {
           loading: false,
           racks: [],
         }
@@ -288,7 +538,7 @@ export default function AlertsPanel({
     if (effectiveCluster) {
       dispatch(fetchAlertsByRackCluster(effectiveCluster));
     } else if (effectiveDc) {
-      dispatch(fetchAlertsByDataCenter(effectiveDc));
+      dispatch(fetchAlertsByDataCenter(realDcId));
     }
   }, [effectiveCluster, effectiveDc, dispatch]);
 
@@ -302,7 +552,7 @@ export default function AlertsPanel({
       if (effectiveCluster) {
         dispatch(fetchAlertsByRackCluster(effectiveCluster));
       } else if (effectiveDc) {
-        dispatch(fetchAlertsByDataCenter(effectiveDc));
+        dispatch(fetchAlertsByDataCenter(realDcId));
       }
     }, pollInterval);
 
@@ -318,9 +568,9 @@ export default function AlertsPanel({
     if (effectiveCluster) {
       dispatch(markContextFetched({ kind: "cluster", id: effectiveCluster }));
     } else if (effectiveDc) {
-      dispatch(markContextFetched({ kind: "dc", id: effectiveDc }));
+      dispatch(markContextFetched({ kind: "dc", id: realDcId  }));
     }
-  }, [loading, effectiveCluster, effectiveDc, dispatch]);
+  }, [loading, effectiveCluster, realDcId, dispatch]);
 
   /* ----------------------------------------
    * SKELETON RULE

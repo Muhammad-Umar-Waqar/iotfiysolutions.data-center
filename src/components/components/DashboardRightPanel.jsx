@@ -472,6 +472,7 @@ rounded-3xl">
           noData={!selectedRack}
           closeIcon={closeIcon}
           onClose={onClose}
+          clusterId={effectiveCluster}
         />
       </div>
     </div>

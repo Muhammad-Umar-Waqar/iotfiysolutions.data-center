@@ -280,6 +280,57 @@ export const fetchRackClusterMean = createAsyncThunk(
 );
 
 
+// ---------- AC control thunks ----------
+export const setAcAuto = createAsyncThunk(
+  "rackCluster/setAcAuto",
+  async ({ clusterId, enabled }, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return rejectWithValue("No authentication token found");
+      const res = await fetch(`${BASE}/ac/auto-control`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ clusterId, enabled }),
+      });
+      const data = await res.json();
+      if (!res.ok) return rejectWithValue(data.message || "Failed to set auto");
+      return data.data ?? data;
+    } catch (err) {
+      return rejectWithValue(err.message || "Network error");
+    }
+  }
+);
+
+export const setAcManual = createAsyncThunk(
+  "rackCluster/setAcManual",
+  async ({ clusterId, status }, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return rejectWithValue("No authentication token found");
+      const res = await fetch(`${BASE}/ac/manual-control`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ clusterId, status }),
+      });
+      const data = await res.json();
+      if (!res.ok) return rejectWithValue(data.message || "Failed to set manual");
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.message || "Network error");
+    }
+  }
+);
+
+
+
 /* ===================== SLICE ===================== */
 
 const rackClusterSlice = createSlice({
@@ -295,6 +346,7 @@ const rackClusterSlice = createSlice({
       delete: false,
       means: false,
       mean: false,
+       acControl: false,
     },
     error: {
       fetch: null,
@@ -303,6 +355,7 @@ const rackClusterSlice = createSlice({
       delete: null,
       means: null,
       mean: null,
+       acControl: null,
     },
   },
   reducers: {},
@@ -420,7 +473,46 @@ const rackClusterSlice = createSlice({
         s.loading.mean = false;
         s.meanDetail = null;
         s.error.mean = a.payload;
-      });
+      })
+      // AC auto
+.addCase(setAcAuto.pending, (s) => {
+  s.loading.acControl = true;
+  s.error.acControl = null;
+})
+.addCase(setAcAuto.fulfilled, (s, a) => {
+  s.loading.acControl = false;
+  // a.payload is saved ac control object (if returned); also mirror into meanDetail.acControl if present
+  if (a.payload && s.meanDetail) {
+    s.meanDetail.acControl = a.payload;
+  }
+})
+.addCase(setAcAuto.rejected, (s, a) => {
+  s.loading.acControl = false;
+  s.error.acControl = a.payload || a.error?.message;
+})
+
+// AC manual
+.addCase(setAcManual.pending, (s) => {
+  s.loading.acControl = true;
+  s.error.acControl = null;
+})
+.addCase(setAcManual.fulfilled, (s, a) => {
+  s.loading.acControl = false;
+  // server returns status message — update meanDetail.acControl.manualStatus if present
+  if (s.meanDetail && a.payload) {
+    // payload shape varies — be defensive
+    if (a.payload.manualStatus !== undefined) {
+      s.meanDetail.acControl = s.meanDetail.acControl || {};
+      s.meanDetail.acControl.manualStatus = a.payload.manualStatus;
+    }
+  }
+})
+.addCase(setAcManual.rejected, (s, a) => {
+  s.loading.acControl = false;
+  s.error.acControl = a.payload || a.error?.message;
+})
+
+
 
   },
 });
