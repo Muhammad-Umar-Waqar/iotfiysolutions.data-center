@@ -240,6 +240,8 @@ import { fetchRackById } from "../../slices/rackSlice";
 import { setSelectedRackId, markContextFetched, setSelectedRackClusterId } from "../../slices/uiSlice";
 import RackDetailsPanel from "../../pages/RackDetailsPanel";  // new component (see below)
 import ACControl from "./ACControl";
+import { X } from "lucide-react";
+
 
 export default function DashboardRightPanel({
   selectedRackId = null,
@@ -410,6 +412,7 @@ const realDcId = getEffectiveDataCenterId(effectiveDc);
 
   return (
     <div className="min-h-[10vh] max-h-[30vh] sm:h-[30vh] overflow-y-auto">
+
       {listToShow.map((c, index) => {
         const id = c._id || c.clusterId || index;
         const name = c.name || "Rag_1-5_L1";
@@ -458,6 +461,20 @@ const realDcId = getEffectiveDataCenterId(effectiveDc);
 
   return (
     <div className={`dashboard-right-panel shadow-sm flex flex-col  h-full overflow-y-auto custom-scrollbar p-4 lg:p-4 border-l border-[#E5E7EB]/40 bg-[#078d860c] flex-shrink-0 ${className}`}>
+       {closeIcon && onClose && (
+    <div className="flex justify-end mb-2">
+      <button
+        onClick={onClose}
+        className="p-2 rounded-full hover:bg-black/10 active:bg-black/20"
+        aria-label="Close drawer"
+      >
+        <X size={22} className="text-gray-700" />
+      </button>
+    </div>
+  )}
+
+  
+     
       {/* Top: Cluster Means */}
      
     {effectiveCluster && <ACControl clusterId={effectiveCluster}/>
