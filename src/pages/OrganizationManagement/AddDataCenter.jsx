@@ -228,10 +228,13 @@ import {
   fetchAllDataCenters,
 } from "../../slices/DataCenterSlice";
 import "../../styles/pages/management-pages.css";
+import {useStore} from '../../contexts/storecontexts'
+
 
 const AddDataCenter = ({ onNext, onBack }) => {
   const dispatch = useDispatch();
   const { selectedDataCenter, setSelectedDataCenter } = useInstallation();
+  const {user} = useStore();
 
   const [formData, setFormData] = useState({
     data_center_name: "",
@@ -385,8 +388,8 @@ const AddDataCenter = ({ onNext, onBack }) => {
         </p>
 
         <div className="space-y-4 max-w-sm mx-auto w-full">
-          
-          <InputField
+          {
+            user.role == "admin" &&           <InputField
             id="data_center_name"
             name="data_center_name"
             label="Data Center Name"
@@ -396,6 +399,8 @@ const AddDataCenter = ({ onNext, onBack }) => {
             placeholder="Data Center Name"
             icon={<Box size={20} />}
           />
+          }
+
 
           {/* Optional selected hint (very subtle) */}
           {selectedDataCenter && !hasFormValue && (
