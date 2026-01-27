@@ -22,13 +22,31 @@ const uiSlice = createSlice({
   name: "ui",
   initialState,
   reducers: {
-    setSelectedDataCenterId(state, action) {
-      state.selectedDataCenterId = action.payload;
-      // switching DC clears cluster selection
-      state.selectedRackClusterId = null;
-      state.selectedRackId = null;
-      state.autoSelectedRackForContext.cluster = {};
-    },
+    // setSelectedDataCenterId(state, action) {
+    //   state.selectedDataCenterId = action.payload;
+    //   // switching DC clears cluster selection
+    //   state.selectedRackClusterId = null;
+    //   state.selectedRackId = null;
+    //   state.autoSelectedRackForContext.cluster = {};
+    // },
+
+    // src/slices/uiSlice.js
+setSelectedDataCenterId(state, action) {
+  state.selectedDataCenterId = action.payload;
+  // switching DC clears cluster + rack
+  state.selectedRackClusterId = null;
+  state.selectedRackId = null;
+
+  // clear cluster auto-selected markers (we'll allow DC auto-selection to run fresh)
+  state.autoSelectedRackForContext.cluster = {};
+
+  // reset DC auto-selected markers so new DC will auto-select if rules allow
+  state.autoSelectedRackForContext.dc = {};
+
+  // optionally clear contextHasFetched for clusters (we want fresh loads)
+  state.contextHasFetched.cluster = {};
+},
+
     setSelectedRackClusterId(state, action) {
       state.selectedRackClusterId = action.payload;
       // on cluster select we clear selectedRackId until racks load

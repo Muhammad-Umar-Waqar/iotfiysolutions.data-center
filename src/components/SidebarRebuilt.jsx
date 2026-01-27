@@ -524,7 +524,7 @@ import { useStore } from "../contexts/storecontexts"
 import Tooltip from "@mui/material/Tooltip"
 import LogoutDialog from "./Modals/LogoutDialog"
 import { useMediaQuery, Skeleton } from "@mui/material"
-import { resetUI } from "../slices/uiSlice"
+import { resetUI, setSelectedRackClusterId, setSelectedRackId } from "../slices/uiSlice"
 import { useDispatch } from "react-redux"
 
 const Icon = ({ src, alt, size = 24, className = "", ...props }) => (
@@ -636,6 +636,7 @@ const MobDashMenu = ({
   loading = false,
   skeletonCount = 3,
 }) => {
+  const dispatch = useDispatch();
   return (
     <div className="bg-[#E8EDF2] left-1/2 transform -translate-x-1/2 px-3 flex items-center justify-around rounded-t-[35px] fixed bottom-0 z-30 pt-1 w-full max-w-[500px]">
       {loading
@@ -661,6 +662,11 @@ const MobDashMenu = ({
                 className={({ isActive }) =>
                   `h-[45px] w-[45px] flex items-center justify-center sidebar-icon ${isActive ? "active" : ""}`
                 }
+                onClick={() => {
+            // clear only racks/cluster (keep DC)
+            dispatch(setSelectedRackId(null));
+            dispatch(setSelectedRackClusterId(null));
+          }}
               >
                 <Icon src={it.icon} alt={it.label} size={20} />
               </NavLink>

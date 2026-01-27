@@ -151,6 +151,12 @@ export default function RackClusterSelect({
           </MenuItem>
         )}
 
+        {!isLoading && (
+    <MenuItem key="all" value="">
+      All (show all racks)
+    </MenuItem>
+  )}
+
         {!isLoading && clusters.length === 0 && (
           <MenuItem disabled>No Clusters</MenuItem>
         )}

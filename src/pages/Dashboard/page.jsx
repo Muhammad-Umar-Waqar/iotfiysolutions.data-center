@@ -2512,6 +2512,541 @@
 
 
 
+// // Working fine Maybe the above will working fine
+// // src/pages/Dashboard.jsx
+// import { useEffect, useMemo, useRef, useState } from "react";
+// import { useDispatch, useSelector } from "react-redux";
+// import { useStore } from "../../contexts/storecontexts";
+// import { useLocation, useNavigate } from "react-router-dom";
+// import { useMediaQuery, Drawer } from "@mui/material";
+// import "../../styles/pages/Dashboard/dashboard-styles.css"
+// import "../../styles/pages/Dashboard/freezer-cards-responsive.css"
+// import DataCenterSelect from "./DataCenterSelect";
+// import RackClusterSelect from "./RackClusterSelect";
+// import AlertsPanel from "./AlertsPanel";
+// import DashboardRightPanel from "../../components/components/DashboardRightPanel";
+// import { Table, LayoutGrid, CreditCard } from "lucide-react";
+// import FreezerDeviceCard from "./FreezerDeviceCard";
+// import DeviceSkeleton from "./DeviceSkeleton";
+// import TabularView from "../../components/TabularView";
+
+
+// import { fetchAllDataCenters, fetchDataCentersByUser } from "../../slices/DataCenterSlice";
+// import { fetchRackClustersByDataCenter } from "../../slices/rackClusterSlice";
+// import { fetchRacksByDataCenterId, fetchRacksByClusterId, fetchRackById } from "../../slices/rackSlice";
+// import {
+//   setSelectedDataCenterId,
+//   setSelectedRackClusterId,
+//   setSelectedRackId,
+//   markContextFetched,
+//   markAutoSelectedRack,
+// } from "../../slices/uiSlice";
+
+// const POLL_MS_DEFAULT = 5 * 60 * 1000; // fallback 5 minutes 
+
+// export default function Dashboard() {
+//   const dispatch = useDispatch();
+//   const location = useLocation();
+//   const navigate = useNavigate();
+//   const { user } = useStore();
+//   const isDesktop = useMediaQuery("(min-width:768px)");
+//   const [drawerOpen, setDrawerOpen] = useState(false);
+// const [viewMode, setViewMode] = useState("cards"); // "cards" | "table"
+
+//   const pollRef = useRef(null);
+
+//   // Redux slices
+//   const dataCenters = useSelector((s) => s.DataCenter?.DataCenters || []);
+//   const dcLoading = useSelector((s) => s.DataCenter?.loading?.fetch);
+//   const clusters = useSelector((s) => s.rackCluster?.clusters || []);
+//   const rackState = useSelector((s) => s.rack || { racks: [], loading: {} });
+//   const ui = useSelector((s) => s.ui || {});
+//   console.log("UISlice", ui);
+//   const selectedDcId = ui.selectedDataCenterId;
+//   const selectedClusterId = ui.selectedRackClusterId;
+//   const selectedRackId = ui.selectedRackId;
+
+//   const activeRacks = Array.isArray(rackState.racks) ? rackState.racks : [];
+//   console.log("Active RACKS:", activeRacks)
+//   // compute POLL_MS from user.timer or fallback
+//   const POLL_MS = useMemo(() => {
+//     try {
+//       if (!user?.timer) return POLL_MS_DEFAULT;
+//       const m = /^(\d+)(s|m)$/.exec(String(user.timer).trim());
+//       if (!m) return POLL_MS_DEFAULT;
+//       const v = Math.max(1, Math.min(60, parseInt(m[1], 10)));
+//       return m[2] === "s" ? v * 1000 : v * 60 * 1000;
+//     } catch {
+//       return POLL_MS_DEFAULT;
+//     }
+//   }, [user?.timer]);
+
+  
+// // resolve "real" datacenter id expected by backend (DataCenterModel._id)
+// // const getEffectiveDataCenterId = (maybeAssignedId) => {
+// //   if (!maybeAssignedId) return null;
+// //   // find selected item in DataCenters array
+// //   const item = dataCenters.find((d) => String(d._id) === String(maybeAssignedId));
+// //   if (!item) return maybeAssignedId; // fallback (maybe it's already the real id)
+// //   // if it's an assignment object that contains dataCenterId, use its nested _id
+// //   if (item.dataCenterId && (item.dataCenterId._id || item.dataCenterId)) {
+// //     return String(item.dataCenterId._id ?? item.dataCenterId);
+// //   }
+// //   // otherwise item._id is already the real datacenter id (admin case)
+// //   return String(item._id);
+// // };
+
+
+
+
+// // getEffectiveDataCenterId 
+
+// const getEffectiveDataCenterId = (maybeAssignedId) => {
+//   if (!maybeAssignedId) return null;
+
+//   const item = dataCenters.find((d) => String(d._id) === String(maybeAssignedId));
+//   if (!item) return maybeAssignedId; // fallback, maybe real ID already
+
+//   // role-based logic: user/manager -> dataCenterId, admin -> _id
+//   if (user?.role === "user" || user?.role === "manager") {
+//     return String(item.dataCenterId?._id ?? item.dataCenterId);
+//   }
+
+//   // admin case
+//   return String(item._id);
+// };
+
+
+
+// const realDcId  = getEffectiveDataCenterId(selectedDcId);
+
+
+//   useEffect(() => {
+//   if (!user?._id) return;
+
+//   if (user.role === "admin") {
+//     dispatch(fetchAllDataCenters());
+//   } else {
+//     dispatch(fetchDataCentersByUser(user._id));
+//   }
+// }, [user?._id, user?.role, dispatch]);
+
+
+//   // ---------- 2) Resolve default DataCenter when list is available ----------
+//   // useEffect(() => {
+//   //   if (!dataCenters || dataCenters.length === 0) return;
+
+//   //   // if selection already valid, keep it
+//   //   if (selectedDcId && dataCenters.find((d) => String(d._id) === String(selectedDcId))) return;
+
+//   //   // prefer URL param ?dc=...
+//   //   const sp = new URLSearchParams(location.search);
+//   //   const urlDc = sp.get("dc");
+//   //   const found = urlDc && dataCenters.find((d) => String(d._1 ?? d._id) === String(urlDc)); // defensive
+//   //   const chosen = found ? found._id : dataCenters[0]._id;
+
+//   //   dispatch(setSelectedDataCenterId(String(chosen)));
+//   //   // push URL param so refresh/deep link works
+//   //   sp.set("dc", String(chosen));
+//   //   navigate(`${location.pathname}?${sp.toString()}`, { replace: true });
+//   //   // eslint-disable-next-line react-hooks/exhaustive-deps
+//   // }, [dataCenters, dispatch]); // intentionally minimal deps; selection is idempotent
+
+
+
+
+//   // ---------- 2) Resolve default DataCenter when list is available ----------
+// useEffect(() => {
+//   if (!dataCenters || dataCenters.length === 0) return;
+
+//   // if selection already valid, keep it (compare to both top-level and nested ids)
+//   if (selectedDcId) {
+//     const stillValid = dataCenters.some(
+//       (d) =>
+//         String(d._id) === String(selectedDcId) ||
+//         String(d?.dataCenterId?._id || d?.dataCenterId) === String(selectedDcId)
+//     );
+//     if (stillValid) return;
+//   }
+
+//   const sp = new URLSearchParams(location.search);
+//   const urlDc = sp.get("dc");
+
+//   // find item by top-level or nested id
+//   const found = urlDc
+//     ? dataCenters.find(
+//         (d) =>
+//           String(d._id) === String(urlDc) ||
+//           String(d?.dataCenterId?._id || d?.dataCenterId) === String(urlDc)
+//       )
+//     : null;
+
+//   // choose first option's effective id if url not found
+//   const pick = found
+//     ? // compute option id for selection (role-aware)
+//       (user?.role === "admin" ? found._id : (found.dataCenterId?._id || found.dataCenterId || found._id))
+//     : // fallback to first loaded option (role-aware)
+//       (user?.role === "admin"
+//         ? dataCenters[0]._id
+//         : (dataCenters[0]?.dataCenterId?._id || dataCenters[0]?.dataCenterId || dataCenters[0]._id));
+
+//   if (!pick) return;
+
+//   dispatch(setSelectedDataCenterId(String(pick)));
+//   sp.set("dc", String(pick));
+//   navigate(`${location.pathname}?${sp.toString()}`, { replace: true });
+//   // eslint-disable-next-line react-hooks/exhaustive-deps
+// }, [dataCenters, dispatch]);
+
+
+
+
+//   // ---------- 3) When selected DC changes: fetch clusters and racks by DC ----------
+//   // useEffect(() => {
+//   //   if (!selectedDcId) return;
+
+//   //   dispatch(fetchRackClustersByDataCenter(selectedDcId));
+//   //   dispatch(fetchRacksByDataCenterId(selectedDcId));
+//   //   // we rely on rackState.racks update to mark context fetched and auto-select rack
+//   // }, [selectedDcId, dispatch]);
+
+
+// //   useEffect(() => {
+// //   if (!selectedDcId) return;
+
+// //   // If URL contains a cluster param, avoid fetching DC-level racks
+// //   const sp = new URLSearchParams(location.search);
+// //   const urlCluster = sp.get("cluster");
+
+// //   // Always fetch clusters (we need them to restore the cluster selection)
+// //   dispatch(fetchRackClustersByDataCenter(selectedDcId));
+
+// //   // Only fetch DC-level racks immediately when there is no cluster in the URL.
+// //   // If a cluster is present we'll wait for the cluster-restore logic to trigger the cluster fetch.
+// //   if (!urlCluster) {
+// //     dispatch(fetchRacksByDataCenterId(selectedDcId));
+// //   }
+
+// // }, [selectedDcId, dispatch, location.search]);
+
+
+
+// useEffect(() => {
+//   if (!selectedDcId) return;
+
+//   const sp = new URLSearchParams(location.search);
+//   const urlCluster = sp.get("cluster");
+
+//   const realDcId = getEffectiveDataCenterId(selectedDcId);
+//   if (!realDcId) return;
+
+//   // fetch clusters for the real data center id
+//   dispatch(fetchRackClustersByDataCenter(realDcId));
+
+//   // fetch DC-level racks only when no cluster param
+//   if (!urlCluster) {
+//     dispatch(fetchRacksByDataCenterId(realDcId));
+//   }
+// }, [selectedDcId, dispatch, location.search, /* add dataCenters so helper sees latest list */ dataCenters]);
+
+
+//   // Fetch racks according to active context
+//   useEffect(() => {
+//     // if no DC selected, nothing to do
+//     if (!selectedDcId) return;
+
+//     // Only fetch by cluster if cluster is selected
+//     // if (selectedClusterId) {
+//     //   dispatch(fetchRacksByClusterId(selectedClusterId));
+//     // } else {
+//     //   dispatch(fetchRacksByDataCenterId(selectedDcId));
+//     // }
+
+//     if (selectedClusterId) {
+//   dispatch(fetchRacksByClusterId(selectedClusterId));
+// } else {
+//   const realDcId = getEffectiveDataCenterId(selectedDcId);
+//   if (realDcId) dispatch(fetchRacksByDataCenterId(realDcId));
+// }
+
+//   },
+//     // only trigger after both selectedDcId and selectedClusterId are restored
+//     [selectedDcId, selectedClusterId, dispatch]);
+
+
+//   // // ---------- Restore cluster selection from URL ----------
+//   // useEffect(() => {
+//   //   if (!clusters || clusters.length === 0) return;
+
+//   //   const sp = new URLSearchParams(location.search);
+//   //   const urlCluster = sp.get("cluster");
+
+//   //   if (urlCluster && clusters.find(c => String(c._id) === String(urlCluster))) {
+//   //     dispatch(setSelectedRackClusterId(urlCluster));
+//   //   }
+//   // }, [clusters, location.search, dispatch]);
+
+
+//   useEffect(() => {
+//   // Wait until clusters for the selected DC have been loaded (could be empty)
+//   if (!clusters) return;
+
+//   const sp = new URLSearchParams(location.search);
+//   const urlCluster = sp.get("cluster");
+
+//   if (!urlCluster) {
+//     // No cluster param — nothing to restore; ensure DC-level racks are loaded
+//     // if (selectedDcId) dispatch(fetchRacksByDataCenterId(selectedDcId));
+//     if (selectedDcId) dispatch(fetchRacksByDataCenterId(realDcId));
+//     return;
+//   }
+
+//   // If cluster exists in loaded clusters, restore selection
+//   const found = clusters.find((c) => String(c._id) === String(urlCluster));
+//   if (found) {
+//     dispatch(setSelectedRackClusterId(urlCluster));
+//     return;
+//   }
+
+//   // urlCluster exists but not found in clusters -> fallback to DC-level racks
+//   // (this covers cases where the URL had an invalid/old cluster id)
+//   if (selectedDcId) {
+//     dispatch(fetchRacksByDataCenterId(realDcId));
+//   }
+// }, [clusters, location.search, dispatch, selectedDcId]);
+
+
+
+//   // ---------- 5) When rack list changes (either DC-level or cluster-level), auto-select first rack once ----------
+//   useEffect(() => {
+//     const list = Array.isArray(rackState.racks) ? rackState.racks : [];
+
+//     // mark fetched even if empty
+//     const markFetchedForCurrent = () => {
+//       if (selectedClusterId) dispatch(markContextFetched({ kind: "cluster", id: selectedClusterId }));
+//       else if (selectedDcId) dispatch(markContextFetched({ kind: "dc", id: selectedDcId }));
+//     };
+
+//     if (!selectedDcId && !selectedClusterId) {
+//       // nothing to do
+//       return;
+//     }
+
+//     if (!list || list.length === 0) {
+//       markFetchedForCurrent();
+//       return;
+//     }
+
+//     // if selectedRackId already valid inside list, keep it and mark fetched
+//     if (selectedRackId && list.find((r) => String(r._id) === String(selectedRackId))) {
+//       markFetchedForCurrent();
+//       return;
+//     }
+
+//     // check if we already auto-selected for this context
+//     const alreadyAutoSelected = selectedClusterId
+//       ? Boolean(ui.autoSelectedRackForContext?.cluster?.[selectedClusterId])
+//       : Boolean(ui.autoSelectedRackForContext?.dc?.[selectedDcId]);
+
+//     if (alreadyAutoSelected) {
+//       markFetchedForCurrent();
+//       return;
+//     }
+
+//     // auto-select first rack only on desktop
+//     if (isDesktop) {
+//       const first = list[0];
+//       if (first && first._id) {
+//         dispatch(setSelectedRackId(String(first._id)));
+//         dispatch(fetchRackById(String(first._id)));
+//         // mark auto-select for the context
+//         if (selectedClusterId) dispatch(markAutoSelectedRack({ kind: "cluster", id: selectedClusterId }));
+//         else dispatch(markAutoSelectedRack({ kind: "dc", id: selectedDcId }));
+//       }
+//     }
+
+//     markFetchedForCurrent();
+//   }, [
+//     rackState.racks,
+//     selectedDcId,
+//     selectedClusterId,
+//     selectedRackId,
+//     ui.autoSelectedRackForContext,
+//     isDesktop,
+//     dispatch,
+//   ]);
+
+//   // ---------- 6) When selected rack changes → ensure full details are loaded ----------
+//   useEffect(() => {
+//     if (!selectedRackId) return;
+//     dispatch(fetchRackById(selectedRackId));
+//   }, [selectedRackId, dispatch]);
+
+//   // ---------- 7) Polling: re-fetch only the active context (DC or cluster) ----------
+//   useEffect(() => {
+//     // clear previous
+//     if (pollRef.current) {
+//       clearInterval(pollRef.current);
+//       pollRef.current = null;
+//     }
+//     if (!selectedDcId) return;
+
+//     const doPoll = () => {
+//       if (selectedClusterId) {
+//         dispatch(fetchRacksByClusterId(selectedClusterId));
+//       } else {
+//         dispatch(fetchRacksByDataCenterId(realDcId));
+//       }
+//       // Alerts and cluster-means polling can be added here (dispatch thunks)
+//     };
+
+//     // start poll
+//     pollRef.current = setInterval(doPoll, POLL_MS);
+//     return () => {
+//       if (pollRef.current) clearInterval(pollRef.current);
+//       pollRef.current = null;
+//     };
+//   }, [selectedDcId, selectedClusterId, POLL_MS, dispatch]);
+
+//   // ---------- UI handlers ----------
+//   const handleDataCenterChange = (dcId) => {
+//     if (!dcId) return;
+//     dispatch(setSelectedDataCenterId(dcId));
+//     // update url
+//     const sp = new URLSearchParams(location.search);
+//     sp.set("dc", dcId);
+//     // keep cluster param cleared when DC changed
+//     sp.delete("cluster");
+//     navigate(`${location.pathname}?${sp.toString()}`, { replace: true });
+//   };
+
+//   const handleClusterChange = (clusterId) => {
+//     // user-driven only
+//     dispatch(setSelectedRackClusterId(clusterId));
+//     const sp = new URLSearchParams(location.search);
+//     if (clusterId) sp.set("cluster", clusterId);
+//     else sp.delete("cluster");
+//     navigate(`${location.pathname}?${sp.toString()}`, { replace: true });
+//   };
+
+//   const onCardSelect = (rackId) => {
+//     dispatch(setSelectedRackId(rackId));
+//     if (!isDesktop) setDrawerOpen(true);
+//   };
+
+//   const clearSelectedRack = () => {
+//     dispatch(setSelectedRackId(null));
+//     setDrawerOpen(false);
+//   };
+
+
+//   // ---------- Render logic ----------
+//   const showSkeleton = ui.isInitialContextLoad;
+//   const noRacks = !activeRacks || activeRacks.length === 0;
+
+//   return (
+//     <div className="flex w-full flex-row h-full font-inter rounded-md bg-[#F5F6FA]">
+//       <div className="flex-1 min-w-0 space-y-4 overflow-y-auto custom-scrollbar dashboard-main-content bg-white shadow-sm border border-[#E5E7EB]/30 p-3 lg:py-none lg:px-3">
+//         {/* Header */}
+//         <div className="flex justify-between items-center gap-1">
+//           {
+//             !isDesktop && <div>
+//               <img src="/logo-half.png" alt="LOGO" className="w-auto h-[40px] px-2 " />
+//             </div>
+//           }
+//           <div className="flex-1 min-w-[6rem] max-w-[10rem] lg:min-w-[11rem]  lg:max-w-[10rem] xl:max-w-[20rem]  ">
+//             <DataCenterSelect
+//               value={selectedDcId || ""}
+//               onChange={handleDataCenterChange}
+//             />
+//           </div>
+
+//           <div className="flex-1 min-w-[6rem] max-w-[10rem] lg:min-w-[11rem]  lg:max-w-[10rem] xl:max-w-[20rem]  ">
+//             <RackClusterSelect
+//               value={selectedClusterId || ""}
+//               onChange={handleClusterChange}
+//               disabled={!selectedDcId}
+//             />
+//           </div>
+
+//  <div className="">
+
+//             {/* toggle icon */}
+//             <button
+//               onClick={() => setViewMode(viewMode === "cards" ? "table" : "cards")}
+//               className="p-2 rounded hover:bg-gray-100 cursor-pointer"
+//               title={viewMode === "cards" ? "Show Table View" : "Show Card View"}
+//             >
+//               {viewMode === "cards" ? (
+//                 <LayoutGrid className="w-auto h-[2rem] text-blue-400 z-44"/>   // tabular icon
+//               ) : (
+//                 <CreditCard className="w-auto h-[2rem] text-blue-400 z-44" /> // card icon
+//               )}
+//             </button>
+//           </div>
+
+//         </div>
+
+     
+//                   <div className=" rack-view-container flex-1 min-h-full bg-[#07518d1d]   rounded-4xl relative ">
+                    
+         
+          
+//                     {viewMode === "table" ? (
+//                     <TabularView
+//                     racks={activeRacks}
+//                     selectedRackId={selectedRackId}
+//                     onSelect={(id) => dispatch(setSelectedRackId(id))}
+//                     />
+//                     ) : (
+//                     <div className={`freezer-cards-container custom-scrollbar hide-scrollbar ${noRacks && !showSkeleton ? "no-scroll" : ""}`}>
+//                     {showSkeleton ? (
+//                     <div className="freezer-cards-grid">
+//                     {Array.from({ length: 4 }).map((_, i) => <DeviceSkeleton key={i} />)}
+//                     </div>
+//                     ) : noRacks ? (
+//                     // <EmptyRackState />
+//                     <></>
+//                     ) : (
+//                     <div className="freezer-cards-grid">
+//                     {activeRacks.map((rack) => (
+//                     <FreezerDeviceCard
+//                     key={rack?._id}
+//                     deviceId={rack?.name}
+//                     ambientTemperature={rack.tempV}
+//                     freezerTemperature={rack.humiV}
+//                     batteryLow={rack?.humiA ?? false}
+//                     refrigeratorAlert={rack?.tempA ?? false}
+//                     onCardSelect={() => onCardSelect(rack?._id)}
+//                     isSelected={String(rack?._id) === String(selectedRackId)}
+//                     espHumidity={rack.humiA ?? rack?.humiV}
+//                     humidityAlert={rack?.humidityAlert}
+//               />
+//             ))}
+//             </div>
+//             )}
+//             </div>
+//             )}
+//             </div>
+
+//         <AlertsPanel dataCenterId={selectedDcId} rackClusterId={selectedClusterId} pollInterval={POLL_MS} />
+//       </div>
+
+//       {isDesktop ? (
+//         <DashboardRightPanel selectedRackId={selectedRackId} selectedDataCenterId={selectedDcId} selectedRackClusterId={selectedClusterId} />
+//       ) : (
+//         <Drawer open={drawerOpen} onClose={clearSelectedRack} anchor="right">
+//           <DashboardRightPanel selectedRackId={selectedRackId} selectedDataCenterId={selectedDcId} selectedRackClusterId={selectedClusterId} closeIcon onClose={clearSelectedRack} />
+//         </Drawer>
+//       )}
+//     </div>
+//   );
+// }
+
+
+
+// Working for Jawwad Rack Select me fix karna ha
+
 // Working fine Maybe the above will working fine
 // src/pages/Dashboard.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -2582,21 +3117,6 @@ const [viewMode, setViewMode] = useState("cards"); // "cards" | "table"
   }, [user?.timer]);
 
   
-// resolve "real" datacenter id expected by backend (DataCenterModel._id)
-// const getEffectiveDataCenterId = (maybeAssignedId) => {
-//   if (!maybeAssignedId) return null;
-//   // find selected item in DataCenters array
-//   const item = dataCenters.find((d) => String(d._id) === String(maybeAssignedId));
-//   if (!item) return maybeAssignedId; // fallback (maybe it's already the real id)
-//   // if it's an assignment object that contains dataCenterId, use its nested _id
-//   if (item.dataCenterId && (item.dataCenterId._id || item.dataCenterId)) {
-//     return String(item.dataCenterId._id ?? item.dataCenterId);
-//   }
-//   // otherwise item._id is already the real datacenter id (admin case)
-//   return String(item._id);
-// };
-
-
 
 
 // getEffectiveDataCenterId 
@@ -2697,38 +3217,6 @@ useEffect(() => {
   navigate(`${location.pathname}?${sp.toString()}`, { replace: true });
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [dataCenters, dispatch]);
-
-
-
-
-  // ---------- 3) When selected DC changes: fetch clusters and racks by DC ----------
-  // useEffect(() => {
-  //   if (!selectedDcId) return;
-
-  //   dispatch(fetchRackClustersByDataCenter(selectedDcId));
-  //   dispatch(fetchRacksByDataCenterId(selectedDcId));
-  //   // we rely on rackState.racks update to mark context fetched and auto-select rack
-  // }, [selectedDcId, dispatch]);
-
-
-//   useEffect(() => {
-//   if (!selectedDcId) return;
-
-//   // If URL contains a cluster param, avoid fetching DC-level racks
-//   const sp = new URLSearchParams(location.search);
-//   const urlCluster = sp.get("cluster");
-
-//   // Always fetch clusters (we need them to restore the cluster selection)
-//   dispatch(fetchRackClustersByDataCenter(selectedDcId));
-
-//   // Only fetch DC-level racks immediately when there is no cluster in the URL.
-//   // If a cluster is present we'll wait for the cluster-restore logic to trigger the cluster fetch.
-//   if (!urlCluster) {
-//     dispatch(fetchRacksByDataCenterId(selectedDcId));
-//   }
-
-// }, [selectedDcId, dispatch, location.search]);
-
 
 
 useEffect(() => {
@@ -2922,7 +3410,7 @@ useEffect(() => {
 
   const handleClusterChange = (clusterId) => {
     // user-driven only
-    dispatch(setSelectedRackClusterId(clusterId));
+    dispatch(setSelectedRackClusterId(clusterId || null));
     const sp = new URLSearchParams(location.search);
     if (clusterId) sp.set("cluster", clusterId);
     else sp.delete("cluster");
