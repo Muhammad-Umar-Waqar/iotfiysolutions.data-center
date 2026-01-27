@@ -856,8 +856,48 @@ const getDcIdFromEntry = (entry) => {
 */
 const DataCenterSlice = createSlice({
   name: "DataCenter",
-  initialState: { /* ... unchanged ... */ },
-  reducers: { /* unchanged */ },
+  //   initialState: {
+  //   DataCenters: [],
+  //   // separate loading states so list fetching won't affect form submit button
+  //   loading: {
+  //     fetch: false,
+  //     submit: false,
+  //     update: false,
+  //     delete: false,
+  //   },
+  //   error: {
+  //     fetch: null,
+  //     submit: null,
+  //     update: null,
+  //     delete: null,
+  //   },
+  // },
+
+  initialState: {
+  DataCenters: [],
+
+  loading: {
+    fetch: false,
+    submit: false,
+    update: false,
+    delete: false,
+  },
+
+  error: {
+    fetch: null,
+    submit: null,
+    update: null,
+    delete: null,
+  },
+},
+
+  // initialState: { /* ... unchanged ... */ },
+  // reducers: { /* unchanged */ },
+    reducers: {
+    setDataCenters(state, action) {
+      state.DataCenters = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // fetch all
