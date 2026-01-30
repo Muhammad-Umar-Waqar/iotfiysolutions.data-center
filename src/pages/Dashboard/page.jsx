@@ -3101,6 +3101,7 @@ const [viewMode, setViewMode] = useState("cards"); // "cards" | "table"
   const selectedClusterId = ui.selectedRackClusterId;
   const selectedRackId = ui.selectedRackId;
 
+  console.log("rackState:", rackState)
   const activeRacks = Array.isArray(rackState.racks) ? rackState.racks : [];
   console.log("Active RACKS:", activeRacks)
   // compute POLL_MS from user.timer or fallback

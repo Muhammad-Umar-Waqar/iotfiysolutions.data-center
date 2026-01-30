@@ -1591,16 +1591,30 @@ const RackList = ({ selectedRack: propSelectedRack, onRackSelect }) => {
 
       {/* Edit modal */}
       {editOpen && (
+        // <RackEditModal
+        //   open={editOpen}
+        //   rack={editingRack}
+        //   handleClose={() => {
+        //     setEditOpen(false);
+        //     setEditingRack(null);
+        //     // refresh racks after edit to reflect changes
+        //     if (selectedDataCenter?._id) dispatch(fetchRacksByDataCenterId(selectedDataCenter._id));
+        //   }}
+        // />
         <RackEditModal
           open={editOpen}
           rack={editingRack}
+          onUpdated={() => {
+            if (selectedDataCenter?._id) {
+              dispatch(fetchRacksByDataCenterId(selectedDataCenter._id));
+            }
+          }}
           handleClose={() => {
             setEditOpen(false);
             setEditingRack(null);
-            // refresh racks after edit to reflect changes
-            if (selectedDataCenter?._id) dispatch(fetchRacksByDataCenterId(selectedDataCenter._id));
           }}
         />
+
       )}
 
       {/* Delete modal */}

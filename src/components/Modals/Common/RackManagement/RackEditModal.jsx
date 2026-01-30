@@ -1924,7 +1924,7 @@ const extractIdLocal = (v) => {
   return null;
 };
 
-export default function RackEditModal({ open, handleClose, rack }) {
+export default function RackEditModal({ open, handleClose, rack, onUpdated }) {
   const dispatch = useDispatch();
 
   const { loading } = useSelector((state) => state.rack || {});
@@ -2106,6 +2106,7 @@ export default function RackEditModal({ open, handleClose, rack }) {
       ).unwrap();
 
       Swal.fire("Success", "Rack updated successfully.", "success");
+      onUpdated?.();
       handleClose();
     } catch (err) {
       Swal.fire("Error", err || "Unable to update Rack.", "error");
