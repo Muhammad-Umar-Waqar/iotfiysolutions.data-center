@@ -810,8 +810,8 @@ export default function DashboardRightPanel({
         {listToShow.map((c, index) => {
           const id = c._id || c.clusterId || index;
           const name = c.name || "Rag_1-5_L1";
-          const temp = c.meanTemp ?? 28;
-          const humi = c.meanHumi ?? 60;
+          const temp = c.meanTemp ?? 0;
+          const humi = c.meanHumi ?? 0;
           const status = (c.ackitStatus ?? "ON").toUpperCase();
 
           return (

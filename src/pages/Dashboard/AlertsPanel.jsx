@@ -433,7 +433,289 @@
 
 
 
-// src/pages/AlertsPanel.jsx
+// // src/pages/AlertsPanel.jsx
+// import React, { useEffect, useMemo } from "react";
+// import { useDispatch, useSelector } from "react-redux";
+// import AlertList from "./AlertList";
+// import "../../styles/pages/Dashboard/dashboard-styles.css";
+// import { useStore } from "../../contexts/storecontexts";
+// import {
+//   fetchAlertsByDataCenter,
+//   fetchAlertsByRackCluster,
+// } from "../../slices/alertsSlice";
+// import { markContextFetched } from "../../slices/uiSlice";
+
+// export default function AlertsPanel({
+//   dataCenterId = null,
+//   rackClusterId = null,
+//   pollInterval = null,
+// }) {
+//   const dispatch = useDispatch();
+//   const { user } = useStore();
+
+//     const dataCenters = useSelector((s) => s.DataCenter?.DataCenters || []);
+
+    
+//   const getEffectiveDataCenterId = (maybeAssignedId) => {
+//   if (!maybeAssignedId) return null;
+
+//   const item = dataCenters.find((d) => String(d._id) === String(maybeAssignedId));
+//   if (!item) return maybeAssignedId; // fallback, maybe real ID already
+
+//   // role-based logic: user/manager -> dataCenterId, admin -> _id
+//   if (user?.role === "user" || user?.role === "manager") {
+//     console.log("User+Manager")
+//     return String(item.dataCenterId?._id ?? item.dataCenterId);
+//   }
+
+//   // admin case
+//   return String(item._id);
+// };
+
+
+//   const ui = useSelector((s) => s.ui || {});
+
+// const effectiveDc = dataCenterId || ui.selectedDataCenterId || null;
+// const realDcId = useMemo(
+//   () => getEffectiveDataCenterId(effectiveDc),
+//   [effectiveDc, dataCenters, user?.role]
+// );
+
+
+
+
+//   const effectiveCluster = rackClusterId || ui.selectedRackClusterId || null;
+//   // const effectiveDc = dataCenterId || ui.selectedDataCenterId || null;
+
+//   // console.log("effectiveDC>", effectiveDc, "effectiveCluster", effectiveCluster)
+//   // const realDcId = getEffectiveDataCenterId(effectiveDc);
+//   // console.log("realDcId>", realDcId)
+
+
+//   /* ----------------------------------------
+//    * INITIAL LOAD DECISION (CRITICAL LOGIC)
+//    * -------------------------------------- */
+//   const isInitialAlertsLoad = useMemo(() => {
+//     if (effectiveCluster) {
+//       return !ui.contextHasFetched?.cluster?.[effectiveCluster];
+//     }
+//     if (effectiveDc) {
+//       return !ui.contextHasFetched?.dc?.[realDcId];
+//     }
+//     return true;
+//   }, [effectiveCluster, effectiveDc, ui.contextHasFetched]);
+
+//   /* ----------------------------------------
+//    * SELECT ALERT SOURCE (cluster > dc)
+//    * -------------------------------------- */
+//   const alertsState = useSelector((s) => {
+//     if (effectiveCluster) {
+//       return (
+//         s.alerts?.byRackCluster?.[effectiveCluster] ?? {
+//           loading: false,
+//           racks: [],
+//         }
+//       );
+//     }
+//     if (effectiveDc) {
+//       return (
+//         s.alerts?.byDataCenter?.[realDcId] ?? {
+//           loading: false,
+//           racks: [],
+//         }
+//       );
+//     }
+//     return { loading: false, racks: [] };
+//   });
+
+//   const loading = Boolean(alertsState?.loading);
+//   const racks = Array.isArray(alertsState?.racks) ? alertsState.racks : [];
+
+//   /* ----------------------------------------
+//    * FETCH ON MOUNT / DC / CLUSTER CHANGE
+//    * -------------------------------------- */
+//   useEffect(() => {
+//     if (effectiveCluster) {
+//       dispatch(fetchAlertsByRackCluster(effectiveCluster));
+//     } else if (effectiveDc) {
+//       dispatch(fetchAlertsByDataCenter(realDcId));
+//     }
+//   }, [effectiveCluster, effectiveDc, dispatch]);
+
+//   /* ----------------------------------------
+//    * POLLING (NO SKELETONS HERE)
+//    * -------------------------------------- */
+//   // useEffect(() => {
+//   //   if (!pollInterval) return;
+
+//   //   const id = setInterval(() => {
+//   //     if (effectiveCluster) {
+//   //       dispatch(fetchAlertsByRackCluster(effectiveCluster));
+//   //     } else if (effectiveDc) {
+//   //       dispatch(fetchAlertsByDataCenter(realDcId));
+//   //     }
+//   //   }, pollInterval);
+
+//   //   return () => clearInterval(id);
+//   // }, [effectiveCluster, effectiveDc, pollInterval, dispatch]);
+
+
+//   // in AlertsPanel.jsx
+// useEffect(() => {
+//   // do nothing if we have no source (dc/cluster)
+//   if (!effectiveCluster && !effectiveDc) return;
+
+//   // Run an immediate fetch (so UI updates immediately when context or pollInterval changes)
+//   if (effectiveCluster) {
+//     dispatch(fetchAlertsByRackCluster(effectiveCluster));
+//   } else if (effectiveDc) {
+//     dispatch(fetchAlertsByDataCenter(realDcId));
+//   }
+
+//   if (!pollInterval) return; // no auto polling requested
+
+//   const id = setInterval(() => {
+//     if (effectiveCluster) {
+//       dispatch(fetchAlertsByRackCluster(effectiveCluster));
+//     } else if (effectiveDc) {
+//       dispatch(fetchAlertsByDataCenter(realDcId));
+//     }
+//   }, pollInterval);
+
+//   return () => clearInterval(id);
+// }, [effectiveCluster, effectiveDc, realDcId, pollInterval, dispatch]);
+
+
+
+
+//   /* ----------------------------------------
+//    * MARK CONTEXT AS FETCHED (LOCK SKELETONS)
+//    * -------------------------------------- */
+//   useEffect(() => {
+//     if (loading) return;
+
+//     if (effectiveCluster) {
+//       dispatch(markContextFetched({ kind: "cluster", id: effectiveCluster }));
+//     } else if (effectiveDc) {
+//       dispatch(markContextFetched({ kind: "dc", id: realDcId  }));
+//     }
+//   }, [loading, effectiveCluster, realDcId, dispatch]);
+
+//   /* ----------------------------------------
+//    * SKELETON RULE
+//    * -------------------------------------- */
+//   const showSkeleton = isInitialAlertsLoad && loading;
+
+//   /* ----------------------------------------
+//    * MAP DATA
+//    * -------------------------------------- */
+//   const maintenanceItems = racks.map((r) => {
+//     const id = r.rackId ?? r._id;
+//     const name = r.rackName ?? `Rack ${id}`;
+//     const devices =
+//       r.totalAlerts ??
+//       ((r.tempA ? 1 : 0) + (r.humiA ? 1 : 0) || 0);
+
+//     const nestedItems = (r.sensors || []).map((s, idx) => ({
+//       id: `${id}-${idx}`,
+//       name: s.sensorName ?? `Sensor ${idx + 1}`,
+//       date: s.updatedAt
+//         ? new Date(s.updatedAt).toLocaleString()
+//         : undefined,
+//     }));
+
+//     return { id, name, devices, nestedItems };
+//   });
+
+//   const batteryItems = racks.map((r) => {
+//     const id = r.rackId ?? r._id;
+//     const name = r.rackName ?? `Rack ${id}`;
+//     const devices = r.batteryAlertCount ?? 0;
+
+//     const nestedItems = (r.batteryAlertDevices || []).map((d, idx) => ({
+//       id: `${id}-b-${idx}`,
+//       name: d.name ?? "Device",
+//       date: d.date,
+//     }));
+
+//     return { id, name, devices, nestedItems };
+//   });
+
+//   const SkeletonList = () => (
+//     <div className="space-y-2">
+//       {Array.from({ length: 4 }).map((_, i) => (
+//         <div
+//           key={i}
+//           className="h-8 bg-gray-200 rounded animate-pulse"
+//         />
+//       ))}
+//     </div>
+//   );
+
+//   /* ----------------------------------------
+//    * RENDER
+//    * -------------------------------------- */
+//   return (
+//     <div className="flex-shrink-0 mb-16 md:mb-auto">
+//       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+//         <div
+//           className="p-2 md:p-4"
+//           style={{ backgroundColor: "#07518D12", borderRadius: 20 }}
+//         >
+//           {showSkeleton ? (
+//             <SkeletonList />
+//           ) : (
+//             <AlertList
+//               title={
+//                 effectiveCluster
+//                   ? "Temperature Alerts — Cluster"
+//                   : "Temperature Alerts"
+//               }
+//               iconSrc="/freezer-alert-icon.png"
+//               items={maintenanceItems}
+//             />
+//           )}
+//         </div>
+
+//         <div
+//           className="p-2 md:p-4"
+//           style={{ backgroundColor: "#07518D12", borderRadius: 20 }}
+//         >
+//           {showSkeleton ? (
+//             <SkeletonList />
+//           ) : (
+//             <AlertList
+//               title={
+//                 effectiveCluster
+//                   ? "Humidity Alerts — Cluster"
+//                   : "Humidity Alerts"
+//               }
+//               iconSrc="/card-humidity-icon.svg"
+//               items={batteryItems}
+//             />
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// src/pages/Dashboard/AlertsPanel.jsx
 import React, { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import AlertList from "./AlertList";
@@ -453,44 +735,28 @@ export default function AlertsPanel({
   const dispatch = useDispatch();
   const { user } = useStore();
 
-    const dataCenters = useSelector((s) => s.DataCenter?.DataCenters || []);
-
-    
-  const getEffectiveDataCenterId = (maybeAssignedId) => {
-  if (!maybeAssignedId) return null;
-
-  const item = dataCenters.find((d) => String(d._id) === String(maybeAssignedId));
-  if (!item) return maybeAssignedId; // fallback, maybe real ID already
-
-  // role-based logic: user/manager -> dataCenterId, admin -> _id
-  if (user?.role === "user" || user?.role === "manager") {
-    console.log("User+Manager")
-    return String(item.dataCenterId?._id ?? item.dataCenterId);
-  }
-
-  // admin case
-  return String(item._id);
-};
-
-
+  const dataCenters = useSelector((s) => s.DataCenter?.DataCenters || []);
   const ui = useSelector((s) => s.ui || {});
 
-const effectiveDc = dataCenterId || ui.selectedDataCenterId || null;
-const realDcId = useMemo(
-  () => getEffectiveDataCenterId(effectiveDc),
-  [effectiveDc, dataCenters, user?.role]
-);
+  const getEffectiveDataCenterId = (maybeAssignedId) => {
+    if (!maybeAssignedId) return null;
 
+    const item = dataCenters.find((d) => String(d._id) === String(maybeAssignedId));
+    if (!item) return maybeAssignedId; // fallback, maybe real ID already
 
+    // role-based logic: user/manager -> dataCenterId, admin -> _id
+    if (user?.role === "user" || user?.role === "manager") {
+      return String(item.dataCenterId?._id ?? item.dataCenterId);
+    }
 
+    // admin case
+    return String(item._id);
+  };
+
+  const effectiveDc = dataCenterId || ui.selectedDataCenterId || null;
+  const realDcId = useMemo(() => getEffectiveDataCenterId(effectiveDc), [effectiveDc, dataCenters, user?.role]);
 
   const effectiveCluster = rackClusterId || ui.selectedRackClusterId || null;
-  // const effectiveDc = dataCenterId || ui.selectedDataCenterId || null;
-
-  // console.log("effectiveDC>", effectiveDc, "effectiveCluster", effectiveCluster)
-  // const realDcId = getEffectiveDataCenterId(effectiveDc);
-  // console.log("realDcId>", realDcId)
-
 
   /* ----------------------------------------
    * INITIAL LOAD DECISION (CRITICAL LOGIC)
@@ -503,7 +769,7 @@ const realDcId = useMemo(
       return !ui.contextHasFetched?.dc?.[realDcId];
     }
     return true;
-  }, [effectiveCluster, effectiveDc, ui.contextHasFetched]);
+  }, [effectiveCluster, effectiveDc, ui.contextHasFetched, realDcId]);
 
   /* ----------------------------------------
    * SELECT ALERT SOURCE (cluster > dc)
@@ -540,53 +806,30 @@ const realDcId = useMemo(
     } else if (effectiveDc) {
       dispatch(fetchAlertsByDataCenter(realDcId));
     }
-  }, [effectiveCluster, effectiveDc, dispatch]);
+  }, [effectiveCluster, effectiveDc, realDcId, dispatch]);
 
-  /* ----------------------------------------
-   * POLLING (NO SKELETONS HERE)
-   * -------------------------------------- */
-  // useEffect(() => {
-  //   if (!pollInterval) return;
+  // polling + immediate fetch if pollInterval provided
+  useEffect(() => {
+    if (!effectiveCluster && !effectiveDc) return;
 
-  //   const id = setInterval(() => {
-  //     if (effectiveCluster) {
-  //       dispatch(fetchAlertsByRackCluster(effectiveCluster));
-  //     } else if (effectiveDc) {
-  //       dispatch(fetchAlertsByDataCenter(realDcId));
-  //     }
-  //   }, pollInterval);
-
-  //   return () => clearInterval(id);
-  // }, [effectiveCluster, effectiveDc, pollInterval, dispatch]);
-
-
-  // in AlertsPanel.jsx
-useEffect(() => {
-  // do nothing if we have no source (dc/cluster)
-  if (!effectiveCluster && !effectiveDc) return;
-
-  // Run an immediate fetch (so UI updates immediately when context or pollInterval changes)
-  if (effectiveCluster) {
-    dispatch(fetchAlertsByRackCluster(effectiveCluster));
-  } else if (effectiveDc) {
-    dispatch(fetchAlertsByDataCenter(realDcId));
-  }
-
-  if (!pollInterval) return; // no auto polling requested
-
-  const id = setInterval(() => {
     if (effectiveCluster) {
       dispatch(fetchAlertsByRackCluster(effectiveCluster));
     } else if (effectiveDc) {
       dispatch(fetchAlertsByDataCenter(realDcId));
     }
-  }, pollInterval);
 
-  return () => clearInterval(id);
-}, [effectiveCluster, effectiveDc, realDcId, pollInterval, dispatch]);
+    if (!pollInterval) return;
 
+    const id = setInterval(() => {
+      if (effectiveCluster) {
+        dispatch(fetchAlertsByRackCluster(effectiveCluster));
+      } else if (effectiveDc) {
+        dispatch(fetchAlertsByDataCenter(realDcId));
+      }
+    }, pollInterval);
 
-
+    return () => clearInterval(id);
+  }, [effectiveCluster, effectiveDc, realDcId, pollInterval, dispatch]);
 
   /* ----------------------------------------
    * MARK CONTEXT AS FETCHED (LOCK SKELETONS)
@@ -597,60 +840,103 @@ useEffect(() => {
     if (effectiveCluster) {
       dispatch(markContextFetched({ kind: "cluster", id: effectiveCluster }));
     } else if (effectiveDc) {
-      dispatch(markContextFetched({ kind: "dc", id: realDcId  }));
+      dispatch(markContextFetched({ kind: "dc", id: realDcId }));
     }
-  }, [loading, effectiveCluster, realDcId, dispatch]);
+  }, [loading, effectiveCluster, realDcId, dispatch, effectiveDc]);
 
-  /* ----------------------------------------
-   * SKELETON RULE
-   * -------------------------------------- */
   const showSkeleton = isInitialAlertsLoad && loading;
 
   /* ----------------------------------------
-   * MAP DATA
+   * MAP DATA (split temperature vs humidity)
+   * Handles both rackCluster API shape and dataCenter API shape
    * -------------------------------------- */
-  const maintenanceItems = racks.map((r) => {
+
+  const normalizeSensorTemp = (s) => {
+    if (!s) return null;
+    if (s.temperature !== undefined && s.temperature !== null) return s.temperature;
+    if (s.tempV !== undefined && s.tempV !== null) return s.tempV;
+    if (s.temperatureValue !== undefined && s.temperatureValue !== null) return s.temperatureValue;
+    if (s.tempValue !== undefined && s.tempValue !== null) return s.tempValue;
+    return null;
+  };
+
+  const normalizeSensorHumi = (s) => {
+    if (!s) return null;
+    if (s.humidity !== undefined && s.humidity !== null) return s.humidity;
+    if (s.humiV !== undefined && s.humiV !== null) return s.humiV;
+    if (s.humidityValue !== undefined && s.humidityValue !== null) return s.humidityValue;
+    if (s.humiValue !== undefined && s.humiValue !== null) return s.humiValue;
+    return null;
+  };
+
+  const temperatureItems = racks.map((r) => {
     const id = r.rackId ?? r._id;
     const name = r.rackName ?? `Rack ${id}`;
-    const devices =
-      r.totalAlerts ??
-      ((r.tempA ? 1 : 0) + (r.humiA ? 1 : 0) || 0);
 
-    const nestedItems = (r.sensors || []).map((s, idx) => ({
-      id: `${id}-${idx}`,
-      name: s.sensorName ?? `Sensor ${idx + 1}`,
-      date: s.updatedAt
-        ? new Date(s.updatedAt).toLocaleString()
-        : undefined,
-    }));
+    const sensorsArray = Array.isArray(r.sensors) ? r.sensors : [];
+    const tempSensors = sensorsArray
+      .map((s, idx) => {
+        const val = normalizeSensorTemp(s);
+        return val !== null ? { id: `${id}-t-${idx}`, name: s.sensorName ?? `Sensor ${idx + 1}`, date: s.updatedAt ? new Date(s.updatedAt).toLocaleString() : undefined, value: `${val}°C` } : null;
+      })
+      .filter(Boolean);
+
+    const rackHasTempAlert = Boolean(r.temperatureAlert ?? r.tempA ?? r.tempAlert ?? false);
+    const rackTempValue = r.temperatureValue ?? r.tempV ?? r.tempValue ?? null;
+
+    // Use nullish coalescing for the chain, fallback to sensor length if none defined
+    const devices = (r.tempAlertCount ?? r.temperatureAlertCount ?? r.totalAlerts ?? (rackHasTempAlert ? 1 : 0)) ?? tempSensors.length;
+
+    const nestedItems =
+      tempSensors.length > 0
+        ? tempSensors
+        : rackHasTempAlert
+        ? [
+            {
+              id: `${id}-t-fallback`,
+              name: "Temperature alert (sensor details unavailable)",
+              date: undefined,
+              value: rackTempValue != null ? `${rackTempValue}°C` : undefined,
+            },
+          ]
+        : [];
 
     return { id, name, devices, nestedItems };
   });
 
-  const batteryItems = racks.map((r) => {
+  const humidityItems = racks.map((r) => {
     const id = r.rackId ?? r._id;
     const name = r.rackName ?? `Rack ${id}`;
-    const devices = r.batteryAlertCount ?? 0;
 
-    const nestedItems = (r.batteryAlertDevices || []).map((d, idx) => ({
-      id: `${id}-b-${idx}`,
-      name: d.name ?? "Device",
-      date: d.date,
-    }));
+    const sensorsArray = Array.isArray(r.sensors) ? r.sensors : [];
+    const humiSensors = sensorsArray
+      .map((s, idx) => {
+        const val = normalizeSensorHumi(s);
+        return val !== null ? { id: `${id}-h-${idx}`, name: s.sensorName ?? `Sensor ${idx + 1}`, date: s.updatedAt ? new Date(s.updatedAt).toLocaleString() : undefined, value: `${val}%` } : null;
+      })
+      .filter(Boolean);
+
+    const rackHasHumiAlert = Boolean(r.humidityAlert ?? r.humiA ?? r.humiAlert ?? false);
+    const rackHumiValue = r.humidityValue ?? r.humiV ?? r.humiValue ?? null;
+
+    const devices = (r.humiAlertCount ?? r.humidityAlertCount ?? r.totalAlerts ?? (rackHasHumiAlert ? 1 : 0)) ?? humiSensors.length;
+
+    const nestedItems =
+      humiSensors.length > 0
+        ? humiSensors
+        : rackHasHumiAlert
+        ? [
+            {
+              id: `${id}-h-fallback`,
+              name: "Humidity alert (sensor details unavailable)",
+              date: undefined,
+              value: rackHumiValue != null ? `${rackHumiValue}%` : undefined,
+            },
+          ]
+        : [];
 
     return { id, name, devices, nestedItems };
   });
-
-  const SkeletonList = () => (
-    <div className="space-y-2">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div
-          key={i}
-          className="h-8 bg-gray-200 rounded animate-pulse"
-        />
-      ))}
-    </div>
-  );
 
   /* ----------------------------------------
    * RENDER
@@ -658,40 +944,22 @@ useEffect(() => {
   return (
     <div className="flex-shrink-0 mb-16 md:mb-auto">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div
-          className="p-2 md:p-4"
-          style={{ backgroundColor: "#07518D12", borderRadius: 20 }}
-        >
-          {showSkeleton ? (
-            <SkeletonList />
-          ) : (
+        <div className="p-2 md:p-4" style={{ backgroundColor: "#07518D12", borderRadius: 20 }}>
+          {showSkeleton ? <div /> : (
             <AlertList
-              title={
-                effectiveCluster
-                  ? "Temperature Alerts — Cluster"
-                  : "Temperature Alerts"
-              }
+              title={effectiveCluster ? "Temperature Alerts — Cluster" : "Temperature Alerts"}
               iconSrc="/freezer-alert-icon.png"
-              items={maintenanceItems}
+              items={temperatureItems}
             />
           )}
         </div>
 
-        <div
-          className="p-2 md:p-4"
-          style={{ backgroundColor: "#07518D12", borderRadius: 20 }}
-        >
-          {showSkeleton ? (
-            <SkeletonList />
-          ) : (
+        <div className="p-2 md:p-4" style={{ backgroundColor: "#07518D12", borderRadius: 20 }}>
+          {showSkeleton ? <div /> : (
             <AlertList
-              title={
-                effectiveCluster
-                  ? "Humidity Alerts — Cluster"
-                  : "Humidity Alerts"
-              }
+              title={effectiveCluster ? "Humidity Alerts — Cluster" : "Humidity Alerts"}
               iconSrc="/card-humidity-icon.svg"
-              items={batteryItems}
+              items={humidityItems}
             />
           )}
         </div>
