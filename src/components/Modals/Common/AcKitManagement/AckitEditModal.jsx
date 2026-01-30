@@ -48,11 +48,11 @@ export default function AckitEditModal({ open, handleClose, ackit }) {
         <div style={{ marginTop: 12 }}>
           <label className="block mb-1 font-medium text-gray-700">Condition</label>
           <div className="flex items-center gap-2">
-            <select value={condition.type} onChange={(e) => setCondition((p) => ({ ...p, type: e.target.value }))} className="border border-gray-300 rounded-md px-2 py-1">
+            {/* <select value={condition.type} onChange={(e) => setCondition((p) => ({ ...p, type: e.target.value }))} className="border border-gray-300 rounded-md px-2 py-1">
               <option value="temp">Temperature</option>
               <option value="humidity">Humidity</option>
-            </select>
-
+            </select> */}
+            {/* <h3>Condition</h3> */}
             <select value={condition.operator} onChange={(e) => setCondition((p) => ({ ...p, operator: e.target.value }))} className="border border-gray-300 rounded-md px-2 py-1">
               <option value=">">&gt;</option>
               <option value="<">&lt;</option>

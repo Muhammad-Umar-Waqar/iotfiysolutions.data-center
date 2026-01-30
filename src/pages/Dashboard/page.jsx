@@ -3104,19 +3104,60 @@ const [viewMode, setViewMode] = useState("cards"); // "cards" | "table"
   const activeRacks = Array.isArray(rackState.racks) ? rackState.racks : [];
   console.log("Active RACKS:", activeRacks)
   // compute POLL_MS from user.timer or fallback
-  const POLL_MS = useMemo(() => {
-    try {
-      if (!user?.timer) return POLL_MS_DEFAULT;
-      const m = /^(\d+)(s|m)$/.exec(String(user.timer).trim());
-      if (!m) return POLL_MS_DEFAULT;
-      const v = Math.max(1, Math.min(60, parseInt(m[1], 10)));
-      return m[2] === "s" ? v * 1000 : v * 60 * 1000;
-    } catch {
-      return POLL_MS_DEFAULT;
-    }
-  }, [user?.timer]);
+  // const POLL_MS = useMemo(() => {
+  //   try {
+  //     if (!user?.timer) return POLL_MS_DEFAULT;
+  //     const m = /^(\d+)(s|m)$/.exec(String(user.timer).trim());
+  //     if (!m) return POLL_MS_DEFAULT;
+  //     const v = Math.max(1, Math.min(60, parseInt(m[1], 10)));
+  //     return m[2] === "s" ? v * 1000 : v * 60 * 1000;
+  //   } catch {
+  //     return POLL_MS_DEFAULT;
+  //   }
+  // }, [user?.timer]);
 
+
+//   const POLL_MS = useMemo(() => {
+//   try {
+//     if (!user?.timer) return POLL_MS_DEFAULT; // fallback only when user has no timer
+//     const m = /^(\d+)(s|m)$/.exec(String(user.timer).trim());
+//     if (!m) return POLL_MS_DEFAULT;
+//     const num = parseInt(m[1], 10);
+//     if (m[2] === "s") {
+//       // allow up to 3600 seconds (1 hour)
+//       const seconds = Math.max(1, Math.min(3600, num));
+//       return seconds * 1000;
+//     } else {
+//       // minutes: allow up to 60 minutes
+//       const minutes = Math.max(1, Math.min(60, num));
+//       return minutes * 60 * 1000;
+//     }
+//   } catch (err) {
+//     console.warn("Failed to parse user.timer", user?.timer, err);
+//     return POLL_MS_DEFAULT;
+//   }
+// }, [user?.timer]);
   
+const POLL_MS = useMemo(() => {
+  try {
+    if (!user?.timer) return POLL_MS_DEFAULT;
+
+    const m = /^(\d+)(s|m)$/.exec(String(user.timer).trim());
+    if (!m) return POLL_MS_DEFAULT;
+
+    const num = Math.max(1, parseInt(m[1], 10)); // ✅ minimum only
+
+    if (m[2] === "s") {
+      return num * 1000;           // allows 86400s+
+    } else {
+      return num * 60 * 1000;      // allows large minutes too
+    }
+  } catch (err) {
+    console.warn("Failed to parse user.timer", user?.timer, err);
+    return POLL_MS_DEFAULT;
+  }
+}, [user?.timer]);
+
 
 
 // getEffectiveDataCenterId 
@@ -3371,30 +3412,64 @@ useEffect(() => {
   }, [selectedRackId, dispatch]);
 
   // ---------- 7) Polling: re-fetch only the active context (DC or cluster) ----------
-  useEffect(() => {
-    // clear previous
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
+  // useEffect(() => {
+  //   // clear previous
+  //   if (pollRef.current) {
+  //     clearInterval(pollRef.current);
+  //     pollRef.current = null;
+  //   }
+  //   if (!selectedDcId) return;
+
+  //   const doPoll = () => {
+  //     if (selectedClusterId) {
+  //       dispatch(fetchRacksByClusterId(selectedClusterId));
+  //     } else {
+  //       dispatch(fetchRacksByDataCenterId(realDcId));
+  //     }
+  //     // Alerts and cluster-means polling can be added here (dispatch thunks)
+  //   };
+
+  //   // start poll
+  //   pollRef.current = setInterval(doPoll, POLL_MS);
+  //   return () => {
+  //     if (pollRef.current) clearInterval(pollRef.current);
+  //     pollRef.current = null;
+  //   };
+  // }, [selectedDcId, selectedClusterId, POLL_MS, dispatch]);
+
+
+  // ---------- 7) Polling: re-fetch only the active context (DC or cluster) ----------
+useEffect(() => {
+  // clear previous
+  if (pollRef.current) {
+    clearInterval(pollRef.current);
+    pollRef.current = null;
+  }
+  if (!selectedDcId) return;
+  if (!POLL_MS) {
+    // nothing to poll (explicitly disabled)
+    return;
+  }
+
+  const doPoll = () => {
+    if (selectedClusterId) {
+      dispatch(fetchRacksByClusterId(selectedClusterId));
+    } else {
+      dispatch(fetchRacksByDataCenterId(realDcId));
     }
-    if (!selectedDcId) return;
+    // Alerts and cluster-means polling can be added here (dispatch thunks)
+  };
 
-    const doPoll = () => {
-      if (selectedClusterId) {
-        dispatch(fetchRacksByClusterId(selectedClusterId));
-      } else {
-        dispatch(fetchRacksByDataCenterId(realDcId));
-      }
-      // Alerts and cluster-means polling can be added here (dispatch thunks)
-    };
+  // start poll
+  doPoll(); // optionally run once immediately
+  pollRef.current = setInterval(doPoll, POLL_MS);
+  return () => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = null;
+  };
+}, [selectedDcId, selectedClusterId, POLL_MS, dispatch]);
 
-    // start poll
-    pollRef.current = setInterval(doPoll, POLL_MS);
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-      pollRef.current = null;
-    };
-  }, [selectedDcId, selectedClusterId, POLL_MS, dispatch]);
+
 
   // ---------- UI handlers ----------
   const handleDataCenterChange = (dcId) => {
@@ -3427,6 +3502,7 @@ useEffect(() => {
     setDrawerOpen(false);
   };
 
+  console.log("User>>", user);
 
   // ---------- Render logic ----------
   const showSkeleton = ui.isInitialContextLoad;
@@ -3517,14 +3593,16 @@ useEffect(() => {
             )}
             </div>
 
-        <AlertsPanel dataCenterId={selectedDcId} rackClusterId={selectedClusterId} pollInterval={POLL_MS} />
+        <AlertsPanel dataCenterId={selectedDcId} rackClusterId={selectedClusterId} 
+        
+        pollInterval={POLL_MS} />
       </div>
 
       {isDesktop ? (
-        <DashboardRightPanel selectedRackId={selectedRackId} selectedDataCenterId={selectedDcId} selectedRackClusterId={selectedClusterId} />
+        <DashboardRightPanel  pollInterval={POLL_MS} selectedRackId={selectedRackId} selectedDataCenterId={selectedDcId} selectedRackClusterId={selectedClusterId} />
       ) : (
         <Drawer open={drawerOpen} onClose={clearSelectedRack} anchor="right">
-          <DashboardRightPanel selectedRackId={selectedRackId} selectedDataCenterId={selectedDcId} selectedRackClusterId={selectedClusterId} closeIcon onClose={clearSelectedRack} />
+          <DashboardRightPanel pollInterval={POLL_MS}  selectedRackId={selectedRackId} selectedDataCenterId={selectedDcId} selectedRackClusterId={selectedClusterId} closeIcon onClose={clearSelectedRack} />
         </Drawer>
       )}
     </div>

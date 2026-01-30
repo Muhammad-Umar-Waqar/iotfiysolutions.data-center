@@ -1198,7 +1198,7 @@ export default function RackDetailsPanel({ rack }) {
           onChange={(e) => setSensorId(e.target.value)}
         >
           {sensors.map((s) => (
-            <MenuItem key={s._id} value={s._id}>
+            <MenuItem key={s._id._id} value={s._id._id}>
               {s.name}
             </MenuItem>
           ))}
@@ -1221,7 +1221,7 @@ export default function RackDetailsPanel({ rack }) {
         </Stack>
       ) : (
         <Typography variant="caption" color="text.secondary" mt={1}>
-          sensor data is not availa
+          sensor data is not available
         </Typography>
       )}
     </Box>

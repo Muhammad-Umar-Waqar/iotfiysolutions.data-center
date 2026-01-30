@@ -545,19 +545,48 @@ const realDcId = useMemo(
   /* ----------------------------------------
    * POLLING (NO SKELETONS HERE)
    * -------------------------------------- */
-  useEffect(() => {
-    if (!pollInterval) return;
+  // useEffect(() => {
+  //   if (!pollInterval) return;
 
-    const id = setInterval(() => {
-      if (effectiveCluster) {
-        dispatch(fetchAlertsByRackCluster(effectiveCluster));
-      } else if (effectiveDc) {
-        dispatch(fetchAlertsByDataCenter(realDcId));
-      }
-    }, pollInterval);
+  //   const id = setInterval(() => {
+  //     if (effectiveCluster) {
+  //       dispatch(fetchAlertsByRackCluster(effectiveCluster));
+  //     } else if (effectiveDc) {
+  //       dispatch(fetchAlertsByDataCenter(realDcId));
+  //     }
+  //   }, pollInterval);
 
-    return () => clearInterval(id);
-  }, [effectiveCluster, effectiveDc, pollInterval, dispatch]);
+  //   return () => clearInterval(id);
+  // }, [effectiveCluster, effectiveDc, pollInterval, dispatch]);
+
+
+  // in AlertsPanel.jsx
+useEffect(() => {
+  // do nothing if we have no source (dc/cluster)
+  if (!effectiveCluster && !effectiveDc) return;
+
+  // Run an immediate fetch (so UI updates immediately when context or pollInterval changes)
+  if (effectiveCluster) {
+    dispatch(fetchAlertsByRackCluster(effectiveCluster));
+  } else if (effectiveDc) {
+    dispatch(fetchAlertsByDataCenter(realDcId));
+  }
+
+  if (!pollInterval) return; // no auto polling requested
+
+  const id = setInterval(() => {
+    if (effectiveCluster) {
+      dispatch(fetchAlertsByRackCluster(effectiveCluster));
+    } else if (effectiveDc) {
+      dispatch(fetchAlertsByDataCenter(realDcId));
+    }
+  }, pollInterval);
+
+  return () => clearInterval(id);
+}, [effectiveCluster, effectiveDc, realDcId, pollInterval, dispatch]);
+
+
+
 
   /* ----------------------------------------
    * MARK CONTEXT AS FETCHED (LOCK SKELETONS)
@@ -639,8 +668,8 @@ const realDcId = useMemo(
             <AlertList
               title={
                 effectiveCluster
-                  ? "Refrigerator Alerts — Cluster"
-                  : "Refrigerator Alerts"
+                  ? "Temperature Alerts — Cluster"
+                  : "Temperature Alerts"
               }
               iconSrc="/freezer-alert-icon.png"
               items={maintenanceItems}

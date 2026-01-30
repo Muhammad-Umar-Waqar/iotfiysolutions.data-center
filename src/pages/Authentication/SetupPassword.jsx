@@ -127,15 +127,15 @@ export default function SetupPassword() {
         </div>
 
         {/* Right (Images) Section */}
-        <div style={{ backgroundColor: "#EAEAEA" }} className="h-full hidden md:flex flex-col items-center justify-between p-4">
+        <div style={{ backgroundColor: "#EAEAEA" }} className="h-full hidden md:flex flex-col items-center justify-between ">
           {/* Top Image */}
-          <div className="w-full flex justify-end p-4">
+          {/* <div className="w-full flex justify-end p-4">
             <img src={'/login-right-top-image.png'} className="h-16 w-auto object-contain" alt="Top Right Illustration" />
-          </div>
+          </div> */}
 
           {/* Main Image */}
-          <div className="flex-grow flex items-center justify-center p-4">
-            <img src={'/login-image.png'} className="w-full h-auto object-contain" alt="Illustration" />
+          <div className="h-full w-full">
+            <img src={'/login-image.png'} className="w-full h-full object-cover" alt="Illustration" />
           </div>
         </div>
       </div>

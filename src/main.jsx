@@ -684,6 +684,8 @@ import Installation from './pages/Installation/page';
 import { InstallationProvider } from './contexts/InstallationContext';
 import { ManagementRoute } from './Routes/ManagementRoute';
 import RouteSelectionWatcher from './components/RouteSelectionWatcher';
+// import SetupPassword from './pages/Authentication/SetupPassword';
+
 
 createRoot(document.getElementById('root')).render(
   // <StrictMode>
@@ -864,6 +866,7 @@ createRoot(document.getElementById('root')).render(
             <Route path="/" element={<PublicRoute><App /></PublicRoute>}>
               <Route index element={<Login />} />
               <Route path="forgot-password" element={<ForgotPassword />} />
+              <Route path="setup-password/:token" element={<SetupPassword />} />
               <Route path="reset-password/:token" element={<ResetPassword />} />
               <Route path="verify-otp/:token" element={<VerifyOtp />} />
             </Route>

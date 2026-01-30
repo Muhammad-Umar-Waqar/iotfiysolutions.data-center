@@ -59,7 +59,7 @@ export default function TabularView({
   if (!rowList.length || !colList.length) {
     return (
       <div className="tabular-empty text-sm text-gray-500 p-3 h-full flex items-center justify-center">
-        No Devices available
+        {/* No Devices available */}
       </div>
     );
   }
@@ -100,7 +100,7 @@ export default function TabularView({
                 ? (
                   <div style={{ fontSize: 13 }}>
                     <div style={{ fontWeight: 600 }}>{rack.name || `R${rNum}C${cNum}`}</div>
-                    <div style={{ fontSize: 12, color: "#666" }}>
+                    <div style={{ fontSize: 12, color: "#f6f6f6" }}>
                       Hub: {rack.hub?.name || "—"}<br />
                       Temp: {rack.tempV != null ? `${rack.tempV}°C` : "N/A"} · Hum: {rack.humiV != null ? `${rack.humiV}%` : "N/A"}<br />
                       TempAlert: {rack.tempA ? "Yes" : "No"} · HumiAlert: {rack.humiA ? "Yes" : "No"}
@@ -121,7 +121,7 @@ export default function TabularView({
                       aria-label={rack ? `Select ${displayLabel}` : `Empty cell ${rNum}-${cNum}`}
                     >
                       <span className="circle-label">
-                        {rack ? (rack.name ? (rack.name.length > 6 ? rack.name.slice(0,6) + "…" : rack.name) : `R${rNum}C${cNum}`) : ""}
+                        {rack ? (rack.name ? (rack.name.length > 6 ? rack.name.slice(0,6) + ".." : rack.name) : `R${rNum}C${cNum}`) : ""}
                       </span>
                     </button>
                   </Tooltip>

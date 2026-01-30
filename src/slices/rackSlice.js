@@ -51,7 +51,11 @@ export const fetchRackById = createAsyncThunk(
         },
       });
 
+
       const data = await res.json();
+
+      console.log("data><>", data);
+
       if (!res.ok) return rejectWithValue(data.message || "Failed to fetch rack");
 
       return data.rack || null;
