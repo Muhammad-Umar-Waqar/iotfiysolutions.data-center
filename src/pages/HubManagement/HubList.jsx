@@ -901,8 +901,17 @@ const HubList = () => {
   const isMobile = !isDesktop;
 
   useEffect(() => {
+     const dcId = selectedDataCenter && (selectedDataCenter._id ?? selectedDataCenter) || null;
+    if(!dcId){
+    // no DC selected — explicitly clear hubs (prevent persisted stale list)
+    dispatch(clearHubs());
+    return;
+    }
+
     if (selectedDataCenter && selectedDataCenter._id) {
+      console.log("SelectedDataCenter", selectedDataCenter._id)
       dispatch(fetchHubsByDataCenter(selectedDataCenter._id));
+      console.log("HUBS", hubs)
     }
   }, [selectedDataCenter, dispatch]);
 
@@ -964,6 +973,7 @@ const HubList = () => {
       Swal.fire({ icon: "success", title: "Updated", text: "Hub updated." });
       handleEditClose();
       if (selectedDataCenter && selectedDataCenter._id) {
+        console.log("fetching hubs for dcId:", selectedDataCenter._id);
         dispatch(fetchHubsByDataCenter(selectedDataCenter._id));
       }
     } catch (err) {

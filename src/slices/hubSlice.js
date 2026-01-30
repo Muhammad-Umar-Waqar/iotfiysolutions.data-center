@@ -506,7 +506,7 @@ const hubSlice = createSlice({
     hubs: [],
     singleHub: null,
     sensors: [], // <- sensors for selected hub
-
+    
     loading: {
       fetch: false,
       submit: false,
@@ -531,6 +531,12 @@ const hubSlice = createSlice({
     clearHubSensors: (state) => {
       state.sensors = [];
     },
+      clearHubs: (state) => {
+    state.hubs = [];
+    state.error.fetch = null;
+    state.loading.fetch = false;
+  },
+
   },
 
   extraReducers: (builder) => {
@@ -567,6 +573,8 @@ const hubSlice = createSlice({
       /* ---------- FETCH BY DATACENTER ---------- */
       .addCase(fetchHubsByDataCenter.pending, (state) => {
         state.loading.fetch = true;
+        state.error.fetch = null;
+        state.hubs = [];
       })
       .addCase(fetchHubsByDataCenter.fulfilled, (state, action) => {
         state.loading.fetch = false;
@@ -574,7 +582,8 @@ const hubSlice = createSlice({
       })
       .addCase(fetchHubsByDataCenter.rejected, (state, action) => {
         state.loading.fetch = false;
-        state.error.fetch = action.payload;
+        state.error.fetch = action.payload || action.error?.message || "Failed to fetch hubs";
+        state.hubs = [];
       })
 
       /* ---------- FETCH SINGLE ---------- */
@@ -637,6 +646,6 @@ const hubSlice = createSlice({
   },
 });
 
-export const { clearSingleHub, clearHubSensors } = hubSlice.actions;
+export const { clearSingleHub, clearHubSensors, clearHubs  } = hubSlice.actions;
 
 export default hubSlice.reducer;

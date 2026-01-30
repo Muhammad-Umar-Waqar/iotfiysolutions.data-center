@@ -741,6 +741,7 @@
   .rack-circle, .rack-circle.empty {
     width: 32px;
     height: 32px;
+    background-color: #ffffff8f;
   }
   .tabular-body {
      min-height: calc((var(--card-height) * 2) + var(--grid-gap) + (var(--container-padding) * 2));

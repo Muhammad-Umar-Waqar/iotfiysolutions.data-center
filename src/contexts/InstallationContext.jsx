@@ -89,7 +89,7 @@
 
 
 // src/contexts/InstallationContext.jsx
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 const InstallationContext = createContext();
 
@@ -103,6 +103,14 @@ export const InstallationProvider = ({ children }) => {
 
   const [selectedRackCluster, setSelectedRackCluster] = useState(null);
 
+useEffect(() => {
+  // when DC changes, clear child selections (so UI can't show unrelated hubs/racks)
+  setSelectedHub(null);
+  setSelectedRack(null);
+  setSelectedAcKit(null);
+  setSelectedRackCluster(null);
+}, [selectedDataCenter?._id]);
+
   const resetInstallation = () => {
     setSelectedDataCenter(null);
     setSelectedHub(null);
@@ -110,6 +118,11 @@ export const InstallationProvider = ({ children }) => {
     setSelectedAcKit(null);
     setSelectedRackCluster(null);
   };
+
+
+
+    console.log(selectedDataCenter," + " , selectedHub," + ", selectedRack ," + ",selectedAcKit, " + ",   " + ", selectedRackCluster)
+
 
   return (
     <InstallationContext.Provider
