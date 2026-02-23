@@ -869,7 +869,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2";
 
-import { fetchHubsByDataCenter, updateHub, deleteHub } from "../../slices/hubSlice";
+import { fetchHubsByDataCenter, updateHub, deleteHub, clearHubs } from "../../slices/hubSlice";
 import { useInstallation } from "../../contexts/InstallationContext";
 
 import "../../styles/pages/management-pages.css";
@@ -1004,13 +1004,7 @@ const HubList = () => {
           </>
         }
       >
-        {isLoading && (
-          <tr>
-            <td colSpan={2} className="p-4">
-              <TableSkeleton rows={4} />
-            </td>
-          </tr>
-        )}
+        {isLoading && <TableSkeleton rows={4} />}
 
         {!isLoading && !selectedDataCenter && (
           <tr>

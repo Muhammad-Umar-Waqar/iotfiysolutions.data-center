@@ -169,13 +169,7 @@ const RackList = ({ selectedRack: propSelectedRack, onRackSelect }) => {
           </>
         }
       >
-        {isLoading && (
-          <tr>
-            <td colSpan={4} className="p-4">
-              <TableSkeleton rows={4} />
-            </td>
-          </tr>
-        )}
+        {isLoading && <TableSkeleton rows={4} showMiddleColumn={true} />}
 
         {!isLoading && !selectedDataCenter && (
           <tr>

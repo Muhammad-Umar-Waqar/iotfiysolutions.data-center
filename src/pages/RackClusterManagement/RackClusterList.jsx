@@ -1150,13 +1150,7 @@ const RackClusterList = ({ selectedCluster, onClusterSelect }) => {
           </>
         }
       >
-        {loading.fetch && (
-          <tr>
-            <td colSpan={2} className="p-4">
-              <TableSkeleton rows={4} />
-            </td>
-          </tr>
-        )}
+        {loading.fetch && <TableSkeleton rows={4} />}
 
         {!loading.fetch && !selectedDataCenter && (
           <tr>

@@ -240,13 +240,7 @@ export default function AckitList() {
           </>
         }
       >
-        {isLoading && (
-          <tr>
-            <td colSpan={3} className="p-4">
-              <TableSkeleton rows={5} />
-            </td>
-          </tr>
-        )}
+        {isLoading && <TableSkeleton rows={4} showMiddleColumn={true} />}
 
         {!isLoading &&
           ackits.map((a, index) => {
