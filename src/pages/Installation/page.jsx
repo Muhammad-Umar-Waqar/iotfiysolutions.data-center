@@ -570,7 +570,7 @@ function InstallationInner() {
   };
 
   return (
-    <div className="h-[85vh] w-full p-4 flex flex-col">
+    <div className="h-[85vh] w-full p-4 px-10 flex flex-col">
       <InstallationStepper
         steps={labels}
         activeStep={activeStep}
