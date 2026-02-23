@@ -19,12 +19,20 @@ export default function ACControl({ clusterId }) {
   }, [clusterId]);
 
   useEffect(() => {
-    setAutoEnabled(Boolean(meanDetail?.acControl?.enabled ?? meanDetail?.autoEnabled ?? false));
+    // Debug: Log meanDetail to see what we're receiving
+    console.log("ACControl - meanDetail received:", meanDetail);
+    console.log("ACControl - acControl data:", meanDetail?.acControl);
+    
+    // Check for acControl.enabled - handle both object and null cases
+    const enabled = meanDetail?.acControl?.enabled ?? meanDetail?.autoEnabled ?? false;
+    setAutoEnabled(Boolean(enabled));
+    
     // prefer explicit manualStatus, fallback to ackitStatus ON/OFF
-    setManualOn(Boolean(
-      meanDetail?.acControl?.manualStatus ??
-      (meanDetail?.ackitStatus ? meanDetail.ackitStatus === "ON" : false)
-    ));
+    const manualStatus = meanDetail?.acControl?.manualStatus ??
+      (meanDetail?.ackitStatus ? meanDetail.ackitStatus === "ON" : false);
+    setManualOn(Boolean(manualStatus));
+    
+    console.log("ACControl - Setting autoEnabled to:", Boolean(enabled), "manualOn to:", Boolean(manualStatus));
   }, [meanDetail]);
 
   const toggleAuto = async (next) => {

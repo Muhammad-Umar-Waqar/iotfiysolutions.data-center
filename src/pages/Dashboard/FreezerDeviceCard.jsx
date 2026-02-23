@@ -355,14 +355,14 @@ export default function FreezerDeviceCard({
   const hasRefrigeratorAlert = Boolean(refrigeratorAlert);
   const hasBatteryAlert = Boolean(batteryLow);
   
-  console.log("hasRef>", refrigeratorAlert)
-  console.log("hasBat>", batteryLow)
+  // console.log("hasRef>", refrigeratorAlert)
+  // console.log("hasBat>", batteryLow)
   // Priority logic
   const hasAnyAlert = hasRefrigeratorAlert || hasBatteryAlert;
   const hasBothAlerts = hasRefrigeratorAlert && hasBatteryAlert;
 
-  console.log("hasAnyAlert>", hasRefrigeratorAlert || hasBatteryAlert)
-  console.log("hasBothAlerts>", hasBothAlerts)
+  // console.log("hasAnyAlert>", hasRefrigeratorAlert || hasBatteryAlert)
+  // console.log("hasBothAlerts>", hasBothAlerts)
 
   const alertClass = !isSelected
   ? hasRefrigeratorAlert
