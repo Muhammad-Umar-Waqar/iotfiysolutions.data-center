@@ -604,7 +604,6 @@
 
 /* Tabular view styles */
 .tabular-container {
-  /* background: #f3f7f9; */
   border-radius: 12px;
   padding: 12px;
   width: 100%;
@@ -637,7 +636,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  /* max-height: 260px; */
   overflow: auto;
   padding-right: 6px;
 }
@@ -690,22 +688,39 @@
 .rack-circle.normal {
   background: #ffffff;
   color: #334155;
+  border-color: rgba(34, 197, 94, 0.2);
 }
 
-/* alert */
-.rack-circle.alert {
-  background: #ef9a9a; /* light red */
+/* alert - Temperature (RED) - matches card view */
+.rack-circle.alert.alert-temp {
+  background: #CF4F4F;
   color: white;
   border: none;
-  box-shadow: 0 4px 10px rgba(207,79,79,0.12);
+  box-shadow: 0 4px 10px rgba(207, 79, 79, 0.25);
+}
+
+/* alert - Humidity (BLUE) - matches card view */
+.rack-circle.alert.alert-humi {
+  background: #5095B4;
+  color: white;
+  border: none;
+  box-shadow: 0 4px 10px rgba(80, 149, 180, 0.25);
+}
+
+/* alert - Both (RED with blue border) */
+.rack-circle.alert.alert-both {
+  background: #CF4F4F;
+  color: white;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 4px 12px rgba(207, 79, 79, 0.3), 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 /* selected */
 .rack-circle.selected {
-  background: #2563eb; /* blue */
+  background: linear-gradient(135deg, #4f64cf 0%, #45d2de 100%);
   color: white;
   border: none;
-  box-shadow: 0 6px 16px rgba(37,99,235,0.18);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
 }
 
 /* label inside circle */
@@ -719,8 +734,6 @@
 /* hover/focus */
 .rack-circle:hover,
 .rack-circle:focus {
-  /* transform: translateY(3px);
-  transform: translatex(3px); */
   outline: rgba(0, 0, 255, 0.329);
 }
 

@@ -132,7 +132,7 @@
 
 
 
-// TabularView.jsx – Physical Rack / Airplane Seat Style Grid
+// TabularView.jsx – Simple Circle Grid with Enhanced Alert Colors
 import React, { useMemo } from "react";
 import { Tooltip } from "@mui/material";
 
@@ -149,46 +149,49 @@ export default function TabularView({
   onSelect = () => {},
   maxCols = null,
 }) {
-  /**
-   * STEP 1: Normalize data into:
-   * rows: [1,2,3]
-   * cols: [1,2,3,4]
-   * grid[row][col] = rack
-   */
-  const { rows, cols, grid } = useMemo(() => {
-    const rowSet = new Set();
-    const colSet = new Set();
-    const gridMap = {};
+  // Normalize rows/cols as integers and build map
+  const { rowList, colList, gridMap } = useMemo(() => {
+    const rows = new Set();
+    const cols = new Set();
+    const map = {}; // map["rX"]["cY"] = rack
 
-    for (const rack of racks) {
-      const row = parseInt(String(rack.row || "").replace(/[^0-9]/g, ""), 10);
-      const col = parseInt(String(rack.col || "").replace(/[^0-9]/g, ""), 10);
+    for (const r of racks) {
+      const rawRow = String(r.row || "").toLowerCase();
+      const rawCol = String(r.col || "").toLowerCase();
+      const rowNum = parseInt(rawRow.replace(/^r/, ""), 10);
+      const colNum = parseInt(rawCol.replace(/^c/, ""), 10);
 
-      if (!row || !col) continue;
+      if (!Number.isFinite(rowNum) || !Number.isFinite(colNum)) continue;
 
-      rowSet.add(row);
-      colSet.add(col);
+      rows.add(rowNum);
+      cols.add(colNum);
 
-      if (!gridMap[row]) gridMap[row] = {};
-      gridMap[row][col] = rack;
+      map[rowNum] = map[rowNum] || {};
+      map[rowNum][colNum] = r;
     }
 
-    let rowsArr = Array.from(rowSet).sort((a, b) => a - b);
-    let colsArr = Array.from(colSet).sort((a, b) => a - b);
+    // sorted numeric lists
+    const rowListSorted = Array.from(rows).sort((a, b) => a - b);
+    const colListSorted = Array.from(cols).sort((a, b) => a - b);
 
-    if (maxCols && colsArr.length < maxCols) {
+    // if user provided maxCols, ensure columns include 1..maxCols
+    if (maxCols && colListSorted.length < maxCols) {
       for (let i = 1; i <= maxCols; i++) {
-        if (!colsArr.includes(i)) colsArr.push(i);
+        if (!cols.has(i)) colListSorted.push(i);
       }
-      colsArr.sort((a, b) => a - b);
+      colListSorted.sort((a, b) => a - b);
     }
 
-    return { rows: rowsArr, cols: colsArr, grid: gridMap };
+    return {
+      rowList: rowListSorted,
+      colList: colListSorted,
+      gridMap: map,
+    };
   }, [racks, maxCols]);
 
-  if (!rows.length || !cols.length) {
+  if (!rowList.length || !colList.length) {
     return (
-      <div className="tabular-empty text-sm text-gray-500 h-full flex items-center justify-center">
+      <div className="tabular-empty text-sm text-gray-500 p-3 h-full flex items-center justify-center">
         No racks available
       </div>
     );
@@ -197,53 +200,62 @@ export default function TabularView({
   return (
     <div className="tabular-container h-full">
       <div className="tabular-body h-full">
-        {rows.map((rowNum) => (
-          <div key={rowNum} className="tabular-row">
-            {/* Row label */}
-            <div className="tabular-row-label">{`R${rowNum}`}</div>
+        {rowList.map((rNum) => (
+          <div className="tabular-row" key={`row-${rNum}`}>
+            <div className="tabular-row-label">{`R${rNum}`}</div>
 
-            {/* Columns */}
-            {cols.map((colNum) => {
-              const rack = grid[rowNum]?.[colNum] || null;
+            {colList.map((cNum) => {
+              const rack = gridMap[rNum] ? gridMap[rNum][cNum] : null;
               const isSelected = rack && String(rack._id) === String(selectedRackId);
-              const hasAlert = rack && (rack.tempA || rack.humiA);
+              const hasTempAlert = rack && Boolean(rack.tempA);
+              const hasHumiAlert = rack && Boolean(rack.humiA);
+              const hasAnyAlert = hasTempAlert || hasHumiAlert;
+              const displayLabel = rack ? (rack.name || `R${rNum}C${cNum}`) : null;
 
-              const circleClass = rack
-                ? isSelected
-                  ? "rack-circle selected"
-                  : hasAlert
-                    ? "rack-circle alert"
-                    : "rack-circle normal"
-                : "rack-circle empty";
+              // Determine alert class - different colors for tempA and humiA
+              let circleClass = "rack-circle";
+              if (rack) {
+                if (isSelected) {
+                  circleClass = "rack-circle selected";
+                } else if (hasTempAlert && hasHumiAlert) {
+                  circleClass = "rack-circle alert alert-both";
+                } else if (hasTempAlert) {
+                  circleClass = "rack-circle alert alert-temp";
+                } else if (hasHumiAlert) {
+                  circleClass = "rack-circle alert alert-humi";
+                } else {
+                  circleClass = "rack-circle normal";
+                }
+              } else {
+                circleClass = "rack-circle empty";
+              }
 
-              const tooltip = rack ? (
-                <div style={{ fontSize: 13 }}>
-                  <div style={{ fontWeight: 600 }}>
-                    {rack.name || `R${rowNum}C${colNum}`}
+              const tooltipTitle = rack
+                ? (
+                  <div style={{ fontSize: 13 }}>
+                    <div style={{ fontWeight: 600 }}>{rack.name || `R${rNum}C${cNum}`}</div>
+                    <div style={{ fontSize: 12, color: "#f6f6f6" }}>
+                      Hub: {rack.hub?.name || "—"}<br />
+                      Temp: {rack.tempV != null ? `${rack.tempV}°C` : "N/A"} · Hum: {rack.humiV != null ? `${rack.humiV}%` : "N/A"}<br />
+                      TempAlert: {rack.tempA ? "Yes" : "No"} · HumiAlert: {rack.humiA ? "Yes" : "No"}
+                    </div>
                   </div>
-                  <div style={{ fontSize: 12, color: "#f6f6f6" }}>
-                    Hub: {rack.hub?.name || "—"} <br />
-                    Temp: {rack.tempV != null ? `${rack.tempV}°C` : "N/A"} ·
-                    Hum: {rack.humiV != null ? `${rack.humiV}%` : "N/A"} <br />
-                    TempAlert: {rack.tempA ? "Yes" : "No"} ·
-                    HumiAlert: {rack.humiA ? "Yes" : "No"}
-                  </div>
-                </div>
-              ) : (
-                `Empty R${rowNum}C${colNum}`
-              );
+                )
+                : `Empty R${rNum}C${cNum}`;
 
               return (
-                <div key={`${rowNum}-${colNum}`} className="tabular-cell">
-                  <Tooltip title={tooltip} arrow placement="top">
+                <div key={`cell-${rNum}-${cNum}`} className="tabular-cell">
+                  <Tooltip title={tooltipTitle} arrow placement="top">
                     <button
                       type="button"
                       className={circleClass}
-                      onClick={() => rack && onSelect(String(rack._id))}
-                      aria-label={`Rack R${rowNum}C${colNum}`}
+                      onClick={() => {
+                        if (rack) onSelect(String(rack._id));
+                      }}
+                      aria-label={rack ? `Select ${displayLabel}` : `Empty cell ${rNum}-${cNum}`}
                     >
                       <span className="circle-label">
-                        {rack ? `R${rowNum}C${colNum}` : ""}
+                        {rack ? `R${rNum}C${cNum}` : ""}
                       </span>
                     </button>
                   </Tooltip>
