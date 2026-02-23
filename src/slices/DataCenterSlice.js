@@ -899,26 +899,59 @@ const DataCenterSlice = createSlice({
     },
     clearDataCenters(state) {
       state.DataCenters = [];
-      state.error.fetch = null;
-      state.error.submit = null;
-      state.error.update = null;
-      state.error.delete = null;
+      // Reset loading state
+      state.loading = {
+        fetch: false,
+        submit: false,
+        update: false,
+        delete: false,
+      };
+      // Reset error state
+      state.error = {
+        fetch: null,
+        submit: null,
+        update: null,
+        delete: null,
+      };
     },
   },
   extraReducers: (builder) => {
     builder
       // fetch all
       .addCase(fetchAllDataCenters.pending, (state) => {
+        // Ensure loading object exists
+        if (!state.loading) {
+          state.loading = {
+            fetch: false,
+            submit: false,
+            update: false,
+            delete: false,
+          };
+        }
         state.loading.fetch = true;
+        if (!state.error) {
+          state.error = { fetch: null, submit: null, update: null, delete: null };
+        }
         state.error.fetch = null;
         // Clear old cached data when fetching fresh data
         state.DataCenters = [];
       })
       .addCase(fetchAllDataCenters.fulfilled, (state, action) => {
+        // Ensure loading object exists
+        if (!state.loading) {
+          state.loading = { fetch: false, submit: false, update: false, delete: false };
+        }
         state.loading.fetch = false;
         state.DataCenters = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(fetchAllDataCenters.rejected, (state, action) => {
+        // Ensure loading and error objects exist
+        if (!state.loading) {
+          state.loading = { fetch: false, submit: false, update: false, delete: false };
+        }
+        if (!state.error) {
+          state.error = { fetch: null, submit: null, update: null, delete: null };
+        }
         state.loading.fetch = false;
         state.error.fetch = action.payload || action.error?.message || "Failed to fetch data centers";
         state.DataCenters = [];
@@ -926,14 +959,37 @@ const DataCenterSlice = createSlice({
 
       // create (unchanged)
       .addCase(createDataCenter.pending, (state) => {
+        // Ensure loading object exists
+        if (!state.loading) {
+          state.loading = {
+            fetch: false,
+            submit: false,
+            update: false,
+            delete: false,
+          };
+        }
         state.loading.submit = true;
+        if (!state.error) {
+          state.error = { fetch: null, submit: null, update: null, delete: null };
+        }
         state.error.submit = null;
       })
       .addCase(createDataCenter.fulfilled, (state, action) => {
+        // Ensure loading object exists
+        if (!state.loading) {
+          state.loading = { fetch: false, submit: false, update: false, delete: false };
+        }
         state.loading.submit = false;
         state.DataCenters = [action.payload, ...state.DataCenters];
       })
       .addCase(createDataCenter.rejected, (state, action) => {
+        // Ensure loading and error objects exist
+        if (!state.loading) {
+          state.loading = { fetch: false, submit: false, update: false, delete: false };
+        }
+        if (!state.error) {
+          state.error = { fetch: null, submit: null, update: null, delete: null };
+        }
         state.loading.submit = false;
         state.error.submit = action.payload || action.error?.message || "Failed to create data center";
       })
@@ -995,17 +1051,40 @@ const DataCenterSlice = createSlice({
 
       // fetch by user
       .addCase(fetchDataCentersByUser.pending, (state) => {
+        // Ensure loading object exists
+        if (!state.loading) {
+          state.loading = {
+            fetch: false,
+            submit: false,
+            update: false,
+            delete: false,
+          };
+        }
         state.loading.fetch = true;
+        if (!state.error) {
+          state.error = { fetch: null, submit: null, update: null, delete: null };
+        }
         state.error.fetch = null;
         // Clear old cached data when fetching fresh data
         state.DataCenters = [];
       })
       .addCase(fetchDataCentersByUser.fulfilled, (state, action) => {
+        // Ensure loading object exists
+        if (!state.loading) {
+          state.loading = { fetch: false, submit: false, update: false, delete: false };
+        }
         state.loading.fetch = false;
         // leave payload as-is (assignment shape or full datacenter). reducers now handle both shapes.
         state.DataCenters = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(fetchDataCentersByUser.rejected, (state, action) => {
+        // Ensure loading and error objects exist
+        if (!state.loading) {
+          state.loading = { fetch: false, submit: false, update: false, delete: false };
+        }
+        if (!state.error) {
+          state.error = { fetch: null, submit: null, update: null, delete: null };
+        }
         state.loading.fetch = false;
         state.error.fetch = action.payload || action.error?.message || "Failed to fetch data centers for user";
         state.DataCenters = [];

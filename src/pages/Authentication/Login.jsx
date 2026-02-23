@@ -60,6 +60,20 @@ const handleLogin = async (email, password) => {
       // Clear cached data centers on login to prevent stale data
       dispatch(clearDataCenters());
       
+      // Manually remove DataCenter from persisted localStorage if it exists
+      try {
+        const persistedState = localStorage.getItem('persist:root');
+        if (persistedState) {
+          const parsed = JSON.parse(persistedState);
+          if (parsed.DataCenter) {
+            delete parsed.DataCenter;
+            localStorage.setItem('persist:root', JSON.stringify(parsed));
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to clear persisted DataCenter:', e);
+      }
+      
       login({ token: data.token, user: data.user });
 
       Swal.fire({

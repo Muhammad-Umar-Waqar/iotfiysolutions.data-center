@@ -19,9 +19,17 @@ import uiReducer from '../slices/uiSlice'
 const persistConfig = {
   key: "root",
   storage,
+  version: 2, // Increment version to purge old persisted data
   // Exclude DataCenter from persistence to always fetch fresh data
   // This prevents stale cached data centers from showing on previously used devices
   blacklist: ["DataCenter"],
+  migrate: (state) => {
+    // Remove DataCenter from persisted state if it exists
+    if (state && state.DataCenter) {
+      delete state.DataCenter;
+    }
+    return state;
+  },
 };
 
 const rootReducer = combineReducers({
