@@ -696,7 +696,7 @@
   background: #CF4F4F;
   color: white;
   border: none;
-  box-shadow: 0 4px 10px rgba(207, 79, 79, 0.25);
+  /* box-shadow: 0 4px 10px rgba(207, 79, 79, 0.25); */
 }
 
 /* alert - Humidity (BLUE) - matches card view */
@@ -704,7 +704,7 @@
   background: #5095B4;
   color: white;
   border: none;
-  box-shadow: 0 4px 10px rgba(80, 149, 180, 0.25);
+  /* box-shadow: 0 4px 10px rgba(80, 149, 180, 0.25); */
 }
 
 /* alert - Both (RED with blue border) */
@@ -712,7 +712,7 @@
   background: #CF4F4F;
   color: white;
   border: 2px solid #3b82f6;
-  box-shadow: 0 4px 12px rgba(207, 79, 79, 0.3), 0 0 0 2px rgba(59, 130, 246, 0.2);
+  /* box-shadow: 0 4px 12px rgba(207, 79, 79, 0.3), 0 0 0 2px rgba(59, 130, 246, 0.2); */
 }
 
 /* selected */
@@ -720,7 +720,7 @@
   background: linear-gradient(135deg, #4f64cf 0%, #45d2de 100%);
   color: white;
   border: none;
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+  /* box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18); */
 }
 
 /* label inside circle */
