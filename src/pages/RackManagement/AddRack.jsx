@@ -241,7 +241,7 @@ const AddRack = ({ disabled = false, onNext, onBack }) => {
             disabled={!selectedDataCenter}
           />
 
-                  {/* Hub Autocomplete */}
+          {/* Hub Autocomplete */}
           <div>
             <Autocomplete
               options={hubs}
@@ -249,11 +249,18 @@ const AddRack = ({ disabled = false, onNext, onBack }) => {
               value={hubs.find((h) => h._id === formData.hubId) || null}
               onChange={onHubChange}
               disabled={!selectedDataCenter}
-              renderInput={(params) => <TextField {...params} placeholder="Search Hub" size="small" />}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder="Search Hub"
+                  size="small"
+                  sx={{ backgroundColor: "white", borderRadius: "8px", "& .MuiOutlinedInput-root": { backgroundColor: "white" } }}
+                />
+              )}
             />
           </div>
 
-          {/* Sensors Autocomplete (unchanged) */}
+          {/* Sensors Autocomplete */}
           {formData.hubId && selectedHub?.sensors && (
             <div>
               <Autocomplete
@@ -267,24 +274,31 @@ const AddRack = ({ disabled = false, onNext, onBack }) => {
                     sensorIds: values.map((v) => v._id),
                   }))
                 }
-                renderInput={(params) => <TextField {...params} placeholder="Search Sensors" size="small" />}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder="Search Sensors"
+                    size="small"
+                    sx={{ backgroundColor: "white", borderRadius: "8px", "& .MuiOutlinedInput-root": { backgroundColor: "white" } }}
+                  />
+                )}
               />
             </div>
           )}
 
-          
-            <div>
           {/* Row Select */}
-          <FormControl size="small" fullWidth>
-            <InputLabel id="row-label">Row</InputLabel>
-            <Select
-              labelId="row-label"
-              label="Row"
-              name="row"
-              value={formData.row || ""}
-              onChange={(e) => setFormData((p) => ({ ...p, row: e.target.value }))}
-              disabled={!formData.hubId || !selectedDataCenter}
-            >
+          <div>
+            <FormControl size="small" fullWidth sx={{ backgroundColor: "white", borderRadius: "8px" }}>
+              <InputLabel id="row-label">Row</InputLabel>
+              <Select
+                labelId="row-label"
+                label="Row"
+                name="row"
+                value={formData.row || ""}
+                onChange={(e) => setFormData((p) => ({ ...p, row: e.target.value }))}
+                disabled={!formData.hubId || !selectedDataCenter}
+                sx={{ backgroundColor: "white" }}
+              >
               {loadingOccupancy && <MenuItem value="">Loading...</MenuItem>}
               {/* {!loadingOccupancy &&
                 allRows.map((r) => (
@@ -309,9 +323,10 @@ const AddRack = ({ disabled = false, onNext, onBack }) => {
             </Select>
           </FormControl>
         </div>
+
+        {/* Column Select */}
         <div>
-          {/* Col Select */}
-          <FormControl size="small" fullWidth>
+          <FormControl size="small" fullWidth sx={{ backgroundColor: "white", borderRadius: "8px" }}>
             <InputLabel id="col-label">Column</InputLabel>
             <Select
               labelId="col-label"
@@ -320,6 +335,7 @@ const AddRack = ({ disabled = false, onNext, onBack }) => {
               value={formData.col || ""}
               onChange={(e) => setFormData((p) => ({ ...p, col: e.target.value }))}
               disabled={!formData.row || !formData.hubId || !selectedDataCenter}
+              sx={{ backgroundColor: "white" }}
             >
               {!formData.row && <MenuItem value="">Select Row first</MenuItem>}
               {formData.row && loadingOccupancy && <MenuItem value="">Loading...</MenuItem>}

@@ -1702,48 +1702,36 @@ const AddRackCluster = ({ onBack, onFinish }) => {
   return (
     <div className="h-full p-5 AddingPage rounded-xl lg:rounded-l-none lg:rounded-r-xl shadow-sm w-full flex flex-col justify-between bg-[#EEF3F9] border border-[#E5E7EB]">
       <div className="flex-1 flex flex-col justify-center">
-        {/* <h2 className="data-center-add-title text-center font-semibold"> */}
-          {/* <h2 className="data-center-add-title text-center font-semibold mb-2">
+        <h2 className="data-center-add-title font-semibold mb-1 text-center">Add Rack Cluster</h2>
 
-          Add Rack Cluster
-        </h2> */}
+        <p className="data-center-add-subtitle text-gray-500 mb-6 text-center">
+          {selectedDataCenter ? `Adding Rack Cluster to "${selectedDataCenter.name}"` : "Select a Data Center to add a Rack Cluster"}
+        </p>
 
-        {/* Header */}
-<div className="mb-8">
-  <div className="flex items-center justify-center gap-2 mb-2">
-    <Layers size={22} className="text-gray-700" />
-    <h2 className="data-center-add-title font-semibold">
-      Add Rack Cluster
-    </h2>
-  </div>
-
-  <p className="text-sm text-gray-500 text-center">
-    {selectedDataCenter
-      ? `Data Center: ${selectedDataCenter.name}`
-      : "Select a Data Center first"}
-  </p>
-</div>
-
-
-        {/* <div className="space-y-4  max-w-md mx-auto mt-6"> */}
-        <div className="space-y-6 max-w-md mx-auto mt-8">
+        <div className="data-center-add-form space-y-4 max-w-sm mx-auto w-full">
           {/* Cluster Name */}
           <InputField
+            id="clusterName"
+            name="clusterName"
             label="Cluster Name"
+            type="text"
             value={clusterName}
             onchange={(e) => setClusterName(e.target.value)}
+            placeholder="Enter cluster name"
             icon={<Layers size={20} />}
+            disabled={!selectedDataCenter}
           />
-          <div>
-            {/* AC Kit */}
-            <FormControl fullWidth size="small">
-            {/* <FormControl fullWidth size="medium"> */}
 
+          {/* AC Kit */}
+          <div>
+            <FormControl fullWidth size="small" sx={{ backgroundColor: "white", borderRadius: "8px" }}>
               <InputLabel>AC Kit</InputLabel>
               <Select
                 value={ackitId}
                 label="AC Kit"
                 onChange={(e) => setAckitId(e.target.value)}
+                disabled={!selectedDataCenter}
+                sx={{ backgroundColor: "white" }}
               >
                 {ackits.map((a) => (
                   <MenuItem key={a._id} value={a._id}>
@@ -1756,18 +1744,18 @@ const AddRackCluster = ({ onBack, onFinish }) => {
 
           {/* Racks MultiSelect */}
           <div>
-            <FormControl fullWidth size="small">
+            <FormControl fullWidth size="small" sx={{ backgroundColor: "white", borderRadius: "8px" }}>
               <InputLabel>Racks</InputLabel>
               <Select
                 multiple
                 value={selectedRacks}
                 onChange={(e) => setSelectedRacks(e.target.value)}
                 input={<OutlinedInput label="Racks" />}
+                disabled={!selectedDataCenter}
+                sx={{ backgroundColor: "white" }}
                 renderValue={(selected) => (
-                  // <Box className="flex flex-wrap gap-1">
                   <Box className="flex flex-wrap gap-2 py-1">
-
-                  {selected.map((id) => {
+                    {selected.map((id) => {
                       const rack = racks.find((r) => r._id === id);
                       return (
                         <Chip
@@ -1791,9 +1779,8 @@ const AddRackCluster = ({ onBack, onFinish }) => {
         </div>
       </div>
 
-      {/* Footer */}
-      {/* <div className="pt-4 flex justify-between"> */}
-      <div className="pt-6 flex justify-between items-center">
+      {/* Footer: Back / Save & Finish */}
+      <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between items-center">
 
         <button
           type="button"
