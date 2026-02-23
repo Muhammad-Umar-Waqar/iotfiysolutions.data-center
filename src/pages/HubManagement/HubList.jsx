@@ -869,7 +869,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2";
 
-import { fetchHubsByDataCenter, updateHub, deleteHub, clearHubs } from "../../slices/hubSlice";
+import { fetchHubsByDataCenter, updateHub, deleteHub, clearHubs, removeHubById } from "../../slices/hubSlice";
 import { useInstallation } from "../../contexts/InstallationContext";
 
 import "../../styles/pages/management-pages.css";
@@ -967,14 +967,40 @@ const HubList = () => {
     }
   };
 
-  const handleEdit = async (id, newName) => {
+  const handleEdit = async (id, newName, newDataCenterId) => {
     try {
-      await dispatch(updateHub({ hubId: id, payload: { name: newName } })).unwrap();
-      Swal.fire({ icon: "success", title: "Updated", text: "Hub updated." });
+      const currentDcId = selectedDataCenter?._id || selectedDataCenter;
+      const newDcId = newDataCenterId || currentDcId;
+      
+      await dispatch(updateHub({ 
+        hubId: id, 
+        payload: { 
+          name: newName,
+          dataCenterId: newDcId 
+        } 
+      })).unwrap();
+      
       handleEditClose();
-      if (selectedDataCenter && selectedDataCenter._id) {
-        console.log("fetching hubs for dcId:", selectedDataCenter._id);
-        dispatch(fetchHubsByDataCenter(selectedDataCenter._id));
+      
+      // If data center changed, remove hub from current list immediately
+      if (currentDcId && String(newDcId) !== String(currentDcId)) {
+        dispatch(removeHubById(id));
+        // Clear selected hub if it was the edited one
+        if (selectedHub?._id === id || selectedHub?.id === id) {
+          setSelectedHub(null);
+        }
+        Swal.fire({ 
+          icon: "info", 
+          title: "Hub moved", 
+          text: "This hub now belongs to a different Data Center and has been removed from the current list." 
+        });
+      } else {
+        // Data center didn't change, just refetch to get updated data
+        if (selectedDataCenter && selectedDataCenter._id) {
+          dispatch(fetchHubsByDataCenter(selectedDataCenter._id));
+        }
+        // Show success message only if data center didn't change
+        Swal.fire({ icon: "success", title: "Updated", text: "Hub updated successfully." });
       }
     } catch (err) {
       console.error("Update error:", err);
@@ -1095,7 +1121,7 @@ const HubList = () => {
           hubId={hubId}
           hubName={hubName}
           hubDataCenterId={hubDataCenterId}
-          handleEdit={(id, newName) => handleEdit(id, newName)}
+          handleEdit={handleEdit}
         />
       )}
     </>

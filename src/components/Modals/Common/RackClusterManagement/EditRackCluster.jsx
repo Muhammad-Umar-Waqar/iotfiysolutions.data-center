@@ -16,7 +16,7 @@ import { updateRackCluster } from "../../../../slices/rackClusterSlice";
 
 import { fetchRacksByDataCenterId } from "../../../../slices/rackSlice";
 import { useInstallation } from "../../../../contexts/InstallationContext";
-import { fetchAllAckits } from "../../../../slices/ackitSlice";
+import { fetchAckitsByDataCenter } from "../../../../slices/ackitSlice";
 
 
 export default function EditRackCluster({ open, handleClose, cluster }) {
@@ -51,18 +51,23 @@ export default function EditRackCluster({ open, handleClose, cluster }) {
 
 
   useEffect(() => {
-  if (!open || !cluster) return;
+    if (!open || !cluster) return;
 
-  setName(cluster.name || "");
-  setAckitId(cluster.ackitId || "");
-  setSelectedRacks((cluster.racks || []).map(r => r._id));
+    setName(cluster.name || "");
+    
+    // Extract AC Kit ID from nested structure (handles cluster.ackit._id or cluster.ackitId)
+    const ackitIdValue = cluster.ackit?._id || cluster.ackitId || "";
+    setAckitId(ackitIdValue ? String(ackitIdValue) : "");
+    
+    // Extract rack IDs from nested structure
+    setSelectedRacks((cluster.racks || []).map(r => String(r._id || r._id?._id || r)));
 
-  dispatch(fetchAllAckits());
-
-  if (selectedDataCenter?._id) {
-    dispatch(fetchRacksByDataCenterId(selectedDataCenter._id));
-  }
-}, [open, cluster, selectedDataCenter, dispatch]);
+    // Fetch AC kits for the selected data center
+    if (selectedDataCenter?._id) {
+      dispatch(fetchAckitsByDataCenter(selectedDataCenter._id));
+      dispatch(fetchRacksByDataCenterId(selectedDataCenter._id));
+    }
+  }, [open, cluster, selectedDataCenter, dispatch]);
 
 
 
@@ -132,17 +137,22 @@ export default function EditRackCluster({ open, handleClose, cluster }) {
         {/* Ackit */}
         <TextField
           select
-          label="Ackit"
+          label="AC Kit"
           fullWidth
-          value={ackitId}
+          value={ackitId || ""}
           onChange={(e) => setAckitId(e.target.value)}
           margin="normal"
+          disabled={!ackits || ackits.length === 0}
         >
-          {ackits.map((a) => (
-            <MenuItem key={a._id} value={a._id}>
-              {a.name}
-            </MenuItem>
-          ))}
+          {!ackits || ackits.length === 0 ? (
+            <MenuItem disabled>No AC Kits available</MenuItem>
+          ) : (
+            ackits.map((a) => (
+              <MenuItem key={a._id} value={String(a._id)}>
+                {a.name}
+              </MenuItem>
+            ))
+          )}
         </TextField>
 
         {/* Racks */}
@@ -156,7 +166,7 @@ export default function EditRackCluster({ open, handleClose, cluster }) {
           margin="normal"
         >
           {racks.map((r) => (
-            <MenuItem key={r._id} value={r._id}>
+            <MenuItem key={r._id} value={String(r._id)}>
               {r.name}
             </MenuItem>
           ))}

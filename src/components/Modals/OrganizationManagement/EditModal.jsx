@@ -48,7 +48,7 @@ export default function OrganizationEditModal({
         }}
       >
         <Typography id="edit-org-title" variant="h6" fontWeight="bold" mb={2}>
-          Edit Organization
+          Edit Data Center
         </Typography>
 
         <InputField

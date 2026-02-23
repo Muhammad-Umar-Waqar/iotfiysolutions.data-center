@@ -153,7 +153,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2";
 
-import { fetchAllAckits, deleteAckit } from "../../slices/ackitSlice";
+import { fetchAckitsByDataCenter, deleteAckit, clearAckits } from "../../slices/ackitSlice";
 import DeleteModal from "../../components/Modals/Common/DeleteModal";
 import AckitEditModal from "../../components/Modals/Common/AcKitManagement/AckitEditModal";
 
@@ -179,11 +179,20 @@ export default function AckitList() {
   const isDesktop = useMediaQuery("(min-width:768px)");
   const isMobile = !isDesktop;
 
-  const { selectedAcKit, setSelectedAcKit } = useInstallation();
+  const { selectedDataCenter, selectedAcKit, setSelectedAcKit } = useInstallation();
 
   useEffect(() => {
-    dispatch(fetchAllAckits());
-  }, [dispatch]);
+    const dcId = selectedDataCenter && (selectedDataCenter._id ?? selectedDataCenter) || null;
+    if (!dcId) {
+      // no DC selected — explicitly clear ackits (prevent persisted stale list)
+      dispatch(clearAckits());
+      return;
+    }
+
+    if (selectedDataCenter && selectedDataCenter._id) {
+      dispatch(fetchAckitsByDataCenter(selectedDataCenter._id));
+    }
+  }, [selectedDataCenter, dispatch]);
 
   useEffect(() => {
     if (error) console.error("Ackit error:", error);
@@ -201,6 +210,14 @@ export default function AckitList() {
       });
       setDeleteOpen(false);
       setToDelete(null);
+      // Refresh list after deletion
+      if (selectedDataCenter && selectedDataCenter._id) {
+        dispatch(fetchAckitsByDataCenter(selectedDataCenter._id));
+      }
+      // Clear selected AC Kit if it was the deleted one
+      if (selectedAcKit?._id === id || selectedAcKit?.id === id) {
+        setSelectedAcKit(null);
+      }
     } catch (err) {
       Swal.fire("Error", err || "Unable to delete", "error");
     }
@@ -242,7 +259,16 @@ export default function AckitList() {
       >
         {isLoading && <TableSkeleton rows={4} showMiddleColumn={true} />}
 
+        {!isLoading && !selectedDataCenter && (
+          <tr>
+            <td colSpan={3} className="p-4 text-center text-gray-500">
+              Please select a Data Center to view and manage its AC Kits.
+            </td>
+          </tr>
+        )}
+
         {!isLoading &&
+          selectedDataCenter &&
           ackits.map((a, index) => {
             const id = a._id ?? index;
             const cond = a.condition || {};
@@ -275,10 +301,10 @@ export default function AckitList() {
             );
           })}
 
-        {!isLoading && ackits.length === 0 && (
+        {!isLoading && selectedDataCenter && ackits.length === 0 && (
           <tr>
             <td colSpan={3} className="p-4 text-center text-gray-500">
-              No AC Kits found.
+              No AC Kits found for this Data Center.
             </td>
           </tr>
         )}

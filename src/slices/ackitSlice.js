@@ -144,7 +144,7 @@ export const fetchAckitsByDataCenter = createAsyncThunk(
       const token = localStorage.getItem("token");
       if (!token) return rejectWithValue("No authentication token found");
 
-      const res = await fetch(`${BASE}/ackit/datacenter/${dataCenterId}`, {
+      const res = await fetch(`${BASE}/ackit/by-dataCenter/${dataCenterId}`, {
         method: "GET",
         credentials: "include",
         headers: {
@@ -184,6 +184,11 @@ const ackitSlice = createSlice({
   reducers: {
     setAckits(state, action) {
       state.ackits = action.payload;
+    },
+    clearAckits(state) {
+      state.ackits = [];
+      state.error.fetch = null;
+      state.loading.fetch = false;
     },
   },
   extraReducers: (builder) => {
@@ -279,5 +284,5 @@ const ackitSlice = createSlice({
   },
 });
 
-export const { setAckits } = ackitSlice.actions;
+export const { setAckits, clearAckits } = ackitSlice.actions;
 export default ackitSlice.reducer;

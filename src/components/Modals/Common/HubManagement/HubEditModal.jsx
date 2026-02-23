@@ -164,7 +164,8 @@ import Swal from "sweetalert2";
 
 import InputField from "../../../Inputs/InputField";
 import { updateHub } from "../../../../slices/hubSlice";
-import { fetchAllDataCenters } from "../../../../slices/DataCenterSlice";
+import { fetchAllDataCenters, fetchDataCentersByUser } from "../../../../slices/DataCenterSlice";
+import { useStore } from "../../../../contexts/storecontexts";
 
 export default function HubEditModal({
   open,
@@ -172,8 +173,10 @@ export default function HubEditModal({
   hubId,
   hubName = "",
   hubDataCenterId, // 👈 pass this from HubList
+  handleEdit, // 👈 optional callback to notify parent of update
 }) {
   const dispatch = useDispatch();
+  const { user: currentUser } = useStore();
 
   const { loading } = useSelector((state) => state.hub);
   const { DataCenters } = useSelector((state) => state.DataCenter);
@@ -182,17 +185,99 @@ export default function HubEditModal({
   const [dataCenterId, setDataCenterId] = React.useState("");
 
   /* ------------------------------------
+     Helper functions (same as DataCenterSelect)
+  ------------------------------------ */
+  const getOptionId = React.useCallback((dc) => {
+    if (!dc) return "";
+    // manager/user should prefer nested dataCenterId
+    if (currentUser?.role === "manager" || currentUser?.role === "user") {
+      // nested populated object
+      if (dc.dataCenterId && typeof dc.dataCenterId === "object") {
+        return dc.dataCenterId._id || dc.dataCenterId.id || "";
+      }
+      // nested string id
+      if (dc.dataCenterId && typeof dc.dataCenterId === "string") {
+        return dc.dataCenterId;
+      }
+      // fallback to top-level
+      return dc._id || "";
+    }
+    // admin: prefer top-level _id (full datacenter objects)
+    return dc._id || (dc.dataCenterId && (dc.dataCenterId._id || dc.dataCenterId)) || "";
+  }, [currentUser?.role]);
+
+  const getOptionName = React.useCallback((dc) => {
+    if (!dc) return "";
+    return (dc.dataCenterId && (dc.dataCenterId.name || dc.name)) || dc.name || "";
+  }, []);
+
+  // Normalized options array (same logic as DataCenterSelect)
+  const dataCenterOptions = React.useMemo(() => {
+    if (!Array.isArray(DataCenters)) return [];
+    const map = new Map();
+    return DataCenters.map((dc) => {
+      const id = getOptionId(dc);
+      const name = getOptionName(dc);
+      if (!id) return null;
+      if (map.has(id)) return null; // deduplicate
+      map.set(id, true);
+      return { id, name };
+    }).filter(Boolean);
+  }, [DataCenters, getOptionId, getOptionName]);
+
+  /* ------------------------------------
+     Fetch datacenters based on user role (same as Dashboard)
+  ------------------------------------ */
+  React.useEffect(() => {
+    if (!open || !currentUser?._id) return;
+
+    if (currentUser.role === "admin") {
+      dispatch(fetchAllDataCenters());
+    } else {
+      dispatch(fetchDataCentersByUser(currentUser._id));
+    }
+  }, [open, currentUser?._id, currentUser?.role, dispatch]);
+
+  /* ------------------------------------
      Sync data when modal opens
   ------------------------------------ */
   React.useEffect(() => {
     if (!open) return;
-
     setName(hubName || "");
+    // Set initial dataCenterId - will be normalized when DataCenters load
     setDataCenterId(hubDataCenterId || "");
+  }, [open, hubName, hubDataCenterId]);
 
-    // fetch datacenters only when modal opens
-    dispatch(fetchAllDataCenters());
-  }, [open, hubName, hubDataCenterId, dispatch]);
+  /* ------------------------------------
+     Normalize dataCenterId when DataCenters are loaded
+  ------------------------------------ */
+  React.useEffect(() => {
+    if (!open || !hubDataCenterId || DataCenters.length === 0) return;
+
+    // Find the matching data center and use its normalized ID
+    const currentDc = DataCenters.find((dc) => {
+      const dcId = getOptionId(dc);
+      // Compare with hubDataCenterId (could be string or ObjectId)
+      return String(dcId) === String(hubDataCenterId);
+    });
+    
+    if (currentDc) {
+      const normalizedId = String(getOptionId(currentDc));
+      setDataCenterId(normalizedId);
+      return;
+    }
+    
+    // If not found in list, try to match by checking all possible ID formats
+    const found = DataCenters.find((dc) => {
+      return (
+        String(dc._id) === String(hubDataCenterId) ||
+        String(dc.dataCenterId?._id || dc.dataCenterId) === String(hubDataCenterId)
+      );
+    });
+    if (found) {
+      setDataCenterId(String(getOptionId(found)));
+    }
+  }, [open, hubDataCenterId, DataCenters, getOptionId]);
 
   /* ------------------------------------
      Update handler
@@ -230,11 +315,18 @@ export default function HubEditModal({
         })
       ).unwrap();
 
-      Swal.fire({
-        icon: "success",
-        title: "Hub updated",
-        text: `Hub "${trimmedName}" updated successfully.`,
-      });
+      // Call parent callback if provided (passes id, name, and new dataCenterId)
+      // Parent will handle success/error messages
+      if (handleEdit && typeof handleEdit === "function") {
+        handleEdit(hubId, trimmedName, dataCenterId);
+      } else {
+        // If no callback, show success message here
+        Swal.fire({
+          icon: "success",
+          title: "Hub updated",
+          text: `Hub "${trimmedName}" updated successfully.`,
+        });
+      }
 
       handleClose();
     } catch (err) {
@@ -296,25 +388,25 @@ export default function HubEditModal({
         </TextField> */}
 
 
-                    <TextField
-            select
-            label="Data Center"
-            value={dataCenterId}
-            onChange={(e) => setDataCenterId(e.target.value)}
-            fullWidth
-            margin="normal"
-            disabled={loading.update || DataCenters.length === 0}
-            >
-            {DataCenters.length === 0 ? (
-                <MenuItem disabled>No Data Centers found</MenuItem>
-            ) : (
-                DataCenters.map((dc) => (
-                <MenuItem key={dc._id} value={dc._id}>
-                    {dc.name}
-                </MenuItem>
-                ))
-            )}
-            </TextField>
+        <TextField
+          select
+          label="Data Center"
+          value={dataCenterId || ""}
+          onChange={(e) => setDataCenterId(e.target.value)}
+          fullWidth
+          margin="normal"
+          disabled={loading.update || dataCenterOptions.length === 0}
+        >
+          {dataCenterOptions.length === 0 ? (
+            <MenuItem disabled>No Data Centers found</MenuItem>
+          ) : (
+            dataCenterOptions.map((opt) => (
+              <MenuItem key={opt.id} value={String(opt.id)}>
+                {opt.name}
+              </MenuItem>
+            ))
+          )}
+        </TextField>
 
 
         <Stack

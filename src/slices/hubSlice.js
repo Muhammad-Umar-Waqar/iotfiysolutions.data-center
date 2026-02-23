@@ -531,12 +531,19 @@ const hubSlice = createSlice({
     clearHubSensors: (state) => {
       state.sensors = [];
     },
-      clearHubs: (state) => {
-    state.hubs = [];
-    state.error.fetch = null;
-    state.loading.fetch = false;
-  },
-
+    clearHubs: (state) => {
+      state.hubs = [];
+      state.error.fetch = null;
+      state.loading.fetch = false;
+    },
+    removeHubById: (state, action) => {
+      const hubId = action.payload;
+      state.hubs = state.hubs.filter((hub) => hub._id !== hubId && hub.id !== hubId);
+      // Also clear selected hub if it was the removed one
+      if (state.singleHub && (state.singleHub._id === hubId || state.singleHub.id === hubId)) {
+        state.singleHub = null;
+      }
+    },
   },
 
   extraReducers: (builder) => {
@@ -620,10 +627,16 @@ const hubSlice = createSlice({
       })
       .addCase(updateHub.fulfilled, (state, action) => {
         state.loading.update = false;
-        state.hubs = state.hubs.map((hub) =>
-          // hub._id === action.payload.id ? action.payload : hub
-          hub._id === (action.payload._id || action.payload.id)
-        );
+        const updatedHub = action.payload;
+        const updatedHubId = updatedHub._id || updatedHub.id;
+        
+        // Update the hub if it exists, or remove it if data center changed
+        state.hubs = state.hubs.map((hub) => {
+          if (hub._id === updatedHubId || hub.id === updatedHubId) {
+            return updatedHub;
+          }
+          return hub;
+        });
       })
       .addCase(updateHub.rejected, (state, action) => {
         state.loading.update = false;
@@ -646,6 +659,6 @@ const hubSlice = createSlice({
   },
 });
 
-export const { clearSingleHub, clearHubSensors, clearHubs  } = hubSlice.actions;
+export const { clearSingleHub, clearHubSensors, clearHubs, removeHubById } = hubSlice.actions;
 
 export default hubSlice.reducer;

@@ -6,7 +6,7 @@
 // import { useDispatch, useSelector } from "react-redux";
 // import Swal from "sweetalert2";
 // import InputField from "../../components/Inputs/InputField";
-// import { createAckit, fetchAllAckits } from "../../slices/ackitSlice";
+// import { createAckit, fetchAckitsByDataCenter } from "../../slices/ackitSlice";
 // import "../../styles/pages/management-pages.css";
 
 // const DEFAULT_CONDITION = { type: "temp", operator: ">", value: 0 };
@@ -116,7 +116,7 @@
 // import { useDispatch, useSelector } from "react-redux";
 // import Swal from "sweetalert2";
 // import InputField from "../../components/Inputs/InputField";
-// import { createAckit, fetchAllAckits } from "../../slices/ackitSlice";
+// import { createAckit, fetchAckitsByDataCenter } from "../../slices/ackitSlice";
 // import "../../styles/pages/management-pages.css";
 
 // const DEFAULT_CONDITION = { type: "temp", operator: ">", value: 0 };
@@ -242,7 +242,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import InputField from "../../components/Inputs/InputField";
-import { createAckit, fetchAllAckits } from "../../slices/ackitSlice";
+import { createAckit, fetchAckitsByDataCenter } from "../../slices/ackitSlice";
 import { useInstallation } from "../../contexts/InstallationContext";
 import "../../styles/pages/management-pages.css";
 
@@ -320,8 +320,10 @@ export default function AddAckit({ onNext, onBack }) {
       setName("");
       setCondition(DEFAULT_CONDITION);
 
-      // refresh list
-      dispatch(fetchAllAckits());
+      // refresh list using data center specific API
+      if (selectedDataCenter && selectedDataCenter._id) {
+        dispatch(fetchAckitsByDataCenter(selectedDataCenter._id));
+      }
 
       // go next
       onNext?.();

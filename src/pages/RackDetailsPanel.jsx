@@ -8,23 +8,78 @@ import {
   Select,
   MenuItem,
   Divider,
+  Skeleton,
 } from "@mui/material";
 
 export default function RackDetailsPanel({ rack }) {
   const [sensorId, setSensorId] = React.useState("");
 
   React.useEffect(() => {
-    if (rack?.sensors?.length) {
-      setSensorId(rack.sensors[0]._id);
+    // Reset sensorId when rack changes
+    setSensorId("");
+    
+    // Set first sensor as default when rack has sensors
+    if (rack?.sensors?.length > 0) {
+      // Handle both nested (_id._id) and flat (_id) sensor structures
+      const firstSensor = rack.sensors[0];
+      const sensorIdValue = firstSensor._id?._id || firstSensor._id || null;
+      
+      if (sensorIdValue) {
+        setSensorId(String(sensorIdValue));
+      }
     }
   }, [rack]);
 
   if (!rack) {
     return (
-      <Box p={2}>
-        <Typography variant="body2" color="text.secondary">
-          Select a rack to view details
-        </Typography>
+      <Box
+        p={2.5}
+        sx={{
+          borderRadius: 2,
+          borderColor: "divider",
+          backgroundColor: " #ffffffc5",
+        }}
+      >
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-start">
+          <Skeleton variant="rectangular" width={80} height={80} sx={{ borderRadius: 1 }} />
+          <Stack spacing={0.5} sx={{ ml: 2, flex: 1 }}>
+            <Skeleton variant="text" width={120} height={24} />
+            <Skeleton variant="text" width={150} height={20} />
+          </Stack>
+        </div>
+
+        <Divider sx={{ my: 1.5 }} />
+
+        {/* Status Section Skeleton */}
+        <Stack direction="row" spacing={1}>
+          <div className="w-full grid grid-cols-3 place-items-center gap-3 md:gap-5">
+            <div className="flex items-end justify-center">
+              <Skeleton variant="rectangular" width={24} height={24} sx={{ borderRadius: 0.5 }} />
+              <Skeleton variant="text" width={50} height={16} sx={{ ml: 0.5 }} />
+            </div>
+            <div className="border border-gray-300 rounded-sm p-1 w-full">
+              <Skeleton variant="rectangular" width="100%" height={40} sx={{ borderRadius: 0.5 }} />
+            </div>
+            <div className="border border-gray-300 rounded-sm p-1 w-full">
+              <Skeleton variant="rectangular" width="100%" height={40} sx={{ borderRadius: 0.5 }} />
+            </div>
+          </div>
+        </Stack>
+
+        <Divider sx={{ my: 1.5 }} />
+
+        {/* Sensor Selector Skeleton */}
+        <Stack spacing={0.5}>
+          <Skeleton variant="text" width={60} height={16} />
+          <Skeleton variant="rectangular" width="100%" height={40} sx={{ borderRadius: 1 }} />
+        </Stack>
+
+        {/* Sensor Values Skeleton */}
+        <Stack direction="row" spacing={1} mt={1.5}>
+          <Skeleton variant="rounded" width={120} height={32} />
+          <Skeleton variant="rounded" width={120} height={32} />
+        </Stack>
       </Box>
     );
   }
@@ -42,9 +97,12 @@ export default function RackDetailsPanel({ rack }) {
     sensorValues = [],
   } = rack;
 
-  const selectedSensorValue = sensorValues.find(
-    (sv) => sv.sensorId === sensorId
-  );
+  // Find selected sensor value - handle both string and ObjectId comparisons
+  const selectedSensorValue = sensorValues.find((sv) => {
+    if (!sv.sensorId || !sensorId) return false;
+    // Compare as strings to handle ObjectId vs string mismatches
+    return String(sv.sensorId) === String(sensorId);
+  });
 
   return (
     <Box
@@ -105,11 +163,17 @@ export default function RackDetailsPanel({ rack }) {
           value={sensorId}
           onChange={(e) => setSensorId(e.target.value)}
         >
-          {sensors.map((s) => (
-            <MenuItem key={s._id._id} value={s._id._id}>
-              {s.name}
-            </MenuItem>
-          ))}
+          {sensors.map((s) => {
+            // Handle both nested (_id._id) and flat (_id) sensor structures
+            const sensorIdValue = s._id?._id || s._id;
+            const sensorName = s.name || s.sensorName || "Unknown Sensor";
+            
+            return (
+              <MenuItem key={sensorIdValue} value={String(sensorIdValue)}>
+                {sensorName}
+              </MenuItem>
+            );
+          })}
         </Select>
       </Stack>
 

@@ -32,6 +32,22 @@ const AddRack = ({ disabled = false, onNext, onBack }) => {
     ],
   });
 
+  // Initialize form hubId from InstallationContext when selectedHub changes
+  // This sets the default hub to the one selected in Hub Management page
+  // Only updates if formData.hubId is empty (first time) or matches selectedHub (sync)
+  useEffect(() => {
+    if (selectedHub?._id) {
+      setFormData((p) => {
+        // Set default if empty, or sync if it matches (user hasn't changed it)
+        if (!p.hubId || p.hubId === selectedHub._id) {
+          return { ...p, hubId: selectedHub._id };
+        }
+        // Keep user's form selection if they've explicitly chosen a different hub
+        return p;
+      });
+    }
+  }, [selectedHub?._id]); // Only run when selectedHub changes from Hub Management
+
   // occupancy state: map rowNumber -> Set(columnNumbersBooked)
   const [occupancy, setOccupancy] = useState({});
   const [loadingOccupancy, setLoadingOccupancy] = useState(false);
@@ -105,8 +121,10 @@ const AddRack = ({ disabled = false, onNext, onBack }) => {
   };
 
   const onHubChange = (_, value) => {
+    // Only update local form state, don't update InstallationContext
+    // This prevents RackList from filtering when hub changes in the form
     setFormData((p) => ({ ...p, hubId: value?._id || "", sensorIds: [] }));
-    if (value) setSelectedHub(value);
+    // Don't call setSelectedHub here - keep RackList filtering based on Hub Management selection
   };
 
   // main submit (with pre-create occupancy re-check)
@@ -261,30 +279,34 @@ const AddRack = ({ disabled = false, onNext, onBack }) => {
           </div>
 
           {/* Sensors Autocomplete */}
-          {formData.hubId && selectedHub?.sensors && (
-            <div>
-              <Autocomplete
-                multiple
-                options={selectedHub.sensors}
-                getOptionLabel={(option) => option.sensorName || ""}
-                value={selectedHub.sensors.filter((s) => formData.sensorIds.includes(s._id))}
-                onChange={(_, values) =>
-                  setFormData((p) => ({
-                    ...p,
-                    sensorIds: values.map((v) => v._id),
-                  }))
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    placeholder="Search Sensors"
-                    size="small"
-                    sx={{ backgroundColor: "white", borderRadius: "8px", "& .MuiOutlinedInput-root": { backgroundColor: "white" } }}
-                  />
-                )}
-              />
-            </div>
-          )}
+          {(() => {
+            // Find the hub from hubs array based on formData.hubId (not InstallationContext)
+            const formHub = hubs.find((h) => h._id === formData.hubId);
+            return formData.hubId && formHub?.sensors ? (
+              <div>
+                <Autocomplete
+                  multiple
+                  options={formHub.sensors}
+                  getOptionLabel={(option) => option.sensorName || ""}
+                  value={formHub.sensors.filter((s) => formData.sensorIds.includes(s._id))}
+                  onChange={(_, values) =>
+                    setFormData((p) => ({
+                      ...p,
+                      sensorIds: values.map((v) => v._id),
+                    }))
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Search Sensors"
+                      size="small"
+                      sx={{ backgroundColor: "white", borderRadius: "8px", "& .MuiOutlinedInput-root": { backgroundColor: "white" } }}
+                    />
+                  )}
+                />
+              </div>
+            ) : null;
+          })()}
 
           {/* Row Select */}
           <div>
