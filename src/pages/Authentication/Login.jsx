@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import {NavLink, useNavigate} from 'react-router-dom'
 import { useStore } from '../../contexts/storecontexts';
+import { useDispatch } from 'react-redux';
+import { clearDataCenters } from '../../slices/DataCenterSlice';
 import Swal from 'sweetalert2';
 
 const Login = () => {
@@ -9,6 +11,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate()
   const { login, getUser } = useStore();
+  const dispatch = useDispatch();
   const BASE = import.meta.env.VITE_BACKEND_API || "http://localhost:5050";
   const [loading, setLoading] = useState(false);
 
@@ -53,6 +56,9 @@ const handleLogin = async (email, password) => {
         if (data.token) {
         try { localStorage.setItem("token", data.token); } catch (e) { /* ignore */ }
     }
+      
+      // Clear cached data centers on login to prevent stale data
+      dispatch(clearDataCenters());
       
       login({ token: data.token, user: data.user });
 

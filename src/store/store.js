@@ -19,6 +19,9 @@ import uiReducer from '../slices/uiSlice'
 const persistConfig = {
   key: "root",
   storage,
+  // Exclude DataCenter from persistence to always fetch fresh data
+  // This prevents stale cached data centers from showing on previously used devices
+  blacklist: ["DataCenter"],
 };
 
 const rootReducer = combineReducers({

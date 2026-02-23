@@ -897,6 +897,13 @@ const DataCenterSlice = createSlice({
     setDataCenters(state, action) {
       state.DataCenters = action.payload;
     },
+    clearDataCenters(state) {
+      state.DataCenters = [];
+      state.error.fetch = null;
+      state.error.submit = null;
+      state.error.update = null;
+      state.error.delete = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -904,6 +911,8 @@ const DataCenterSlice = createSlice({
       .addCase(fetchAllDataCenters.pending, (state) => {
         state.loading.fetch = true;
         state.error.fetch = null;
+        // Clear old cached data when fetching fresh data
+        state.DataCenters = [];
       })
       .addCase(fetchAllDataCenters.fulfilled, (state, action) => {
         state.loading.fetch = false;
@@ -988,6 +997,8 @@ const DataCenterSlice = createSlice({
       .addCase(fetchDataCentersByUser.pending, (state) => {
         state.loading.fetch = true;
         state.error.fetch = null;
+        // Clear old cached data when fetching fresh data
+        state.DataCenters = [];
       })
       .addCase(fetchDataCentersByUser.fulfilled, (state, action) => {
         state.loading.fetch = false;
@@ -1017,7 +1028,7 @@ const DataCenterSlice = createSlice({
   },
 });
 
-export const { setDataCenters } = DataCenterSlice.actions;
+export const { setDataCenters, clearDataCenters } = DataCenterSlice.actions;
 export default DataCenterSlice.reducer;
 
 
