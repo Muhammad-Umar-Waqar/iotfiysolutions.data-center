@@ -665,8 +665,8 @@
 /* circle base */
 .rack-circle,
 .rack-circle.empty {
-  width: 38px;
-  height: 38px;
+  width: 45px;
+  height: 45px;
   border-radius: 9999px;
   border: 1px solid rgba(15, 23, 42, 0.06);
   display: inline-flex;
