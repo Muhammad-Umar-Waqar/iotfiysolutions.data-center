@@ -25,10 +25,14 @@ const persistConfig = {
   blacklist: ["DataCenter"],
   migrate: (state) => {
     // Remove DataCenter from persisted state if it exists
-    if (state && state.DataCenter) {
-      delete state.DataCenter;
-    }
-    return state;
+    // Migration function must return a Promise
+    return Promise.resolve((() => {
+      if (state && state.DataCenter) {
+        const { DataCenter, ...rest } = state;
+        return rest;
+      }
+      return state;
+    })());
   },
 };
 
