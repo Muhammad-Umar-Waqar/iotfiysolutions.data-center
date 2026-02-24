@@ -626,7 +626,8 @@ export default function DashboardRightPanel({
   closeIcon = false,
   onClose = undefined,
   className = "",
-  pollInterval = null, 
+  pollInterval = null,
+  racks = [], // Receive racks as prop instead of Redux
 }) {
   const dispatch = useDispatch();
   const { user } = useStore();
@@ -637,9 +638,9 @@ export default function DashboardRightPanel({
   const meanDetail = useSelector((s) => s.rackCluster?.meanDetail);
   const meanLoading = useSelector((s) => s.rackCluster?.loading?.mean);
 
-  // rack state (list or single detail)
-  const rackState = useSelector((s) => s.rack || { racks: [], loading: {} });
-  const racks = Array.isArray(rackState.racks) ? rackState.racks : [];
+  // Use racks from props (passed from Dashboard) instead of Redux
+  // rackState is still used for selectedRack details (fetchRackById)
+  const rackState = useSelector((s) => s.rack || { selectedRack: null, loading: {} });
   const rackLoading = rackState.loading?.fetch;
 
   const ui = useSelector((s) => s.ui || {});

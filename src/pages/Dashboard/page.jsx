@@ -3049,7 +3049,7 @@
 
 // Working fine Maybe the above will working fine
 // src/pages/Dashboard.jsx
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useStore } from "../../contexts/storecontexts";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -3068,7 +3068,7 @@ import TabularView from "../../components/TabularView";
 
 import { fetchAllDataCenters, fetchDataCentersByUser } from "../../slices/DataCenterSlice";
 import { fetchRackClustersByDataCenter } from "../../slices/rackClusterSlice";
-import { fetchRacksByDataCenterId, fetchRacksByClusterId, fetchRackById, clearRacks } from "../../slices/rackSlice";
+import { fetchRackById } from "../../slices/rackSlice"; // Only fetchRackById needed for right panel
 import {
   setSelectedDataCenterId,
   setSelectedRackClusterId,
@@ -3089,21 +3089,21 @@ export default function Dashboard() {
 const [viewMode, setViewMode] = useState("cards"); // "cards" | "table"
 
   const pollRef = useRef(null);
+  const abortControllerRef = useRef(null); // For canceling fetch requests
 
-  // Redux slices
+  // Redux slices (only for UI state, not for racks data)
   const dataCenters = useSelector((s) => s.DataCenter?.DataCenters || []);
   const dcLoading = useSelector((s) => s.DataCenter?.loading?.fetch);
   const clusters = useSelector((s) => s.rackCluster?.clusters || []);
-  const rackState = useSelector((s) => s.rack || { racks: [], loading: {} });
   const ui = useSelector((s) => s.ui || {});
-  console.log("UISlice", ui);
   const selectedDcId = ui.selectedDataCenterId;
   const selectedClusterId = ui.selectedRackClusterId;
   const selectedRackId = ui.selectedRackId;
 
-  console.log("rackState:", rackState)
-  const activeRacks = Array.isArray(rackState.racks) ? rackState.racks : [];
-  console.log("Active RACKS:", activeRacks)
+  // Local state for racks (not in Redux to prevent blinking)
+  const [racks, setRacks] = useState([]);
+  const [racksLoading, setRacksLoading] = useState(false);
+  const racksMapRef = useRef(new Map()); // Track racks by ID for smart updates
   // compute POLL_MS from user.timer or fallback
   // const POLL_MS = useMemo(() => {
   //   try {
@@ -3163,7 +3163,7 @@ const POLL_MS = useMemo(() => {
 
 // getEffectiveDataCenterId 
 
-const getEffectiveDataCenterId = (maybeAssignedId) => {
+const getEffectiveDataCenterId = useCallback((maybeAssignedId) => {
   if (!maybeAssignedId) return null;
 
   const item = dataCenters.find((d) => String(d._id) === String(maybeAssignedId));
@@ -3176,11 +3176,10 @@ const getEffectiveDataCenterId = (maybeAssignedId) => {
 
   // admin case
   return String(item._id);
-};
+}, [dataCenters, user?.role]);
 
-
-
-const realDcId  = getEffectiveDataCenterId(selectedDcId);
+// Memoize realDcId to prevent unnecessary recalculations
+const realDcId = useMemo(() => getEffectiveDataCenterId(selectedDcId), [selectedDcId, getEffectiveDataCenterId]);
 
 
   useEffect(() => {
@@ -3261,6 +3260,152 @@ useEffect(() => {
 }, [dataCenters, dispatch]);
 
 
+// ---------- Direct API fetch function (no Redux) ----------
+const fetchRacksDirectly = useCallback(async (isPolling = false) => {
+  // Cancel any pending request
+  if (abortControllerRef.current) {
+    abortControllerRef.current.abort();
+  }
+
+  // No DC selected → clear racks
+  if (!selectedDcId) {
+    setRacks([]);
+    racksMapRef.current.clear();
+    return;
+  }
+
+  const realDcId = getEffectiveDataCenterId(selectedDcId);
+  if (!realDcId) {
+    setRacks([]);
+    racksMapRef.current.clear();
+    return;
+  }
+
+  // Only show loading skeleton on initial fetch or when context changes (not during polling)
+  if (!isPolling) {
+    setRacksLoading(true);
+  }
+
+  // Create new abort controller for this request
+  const abortController = new AbortController();
+  abortControllerRef.current = abortController;
+
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      if (!isPolling) setRacksLoading(false);
+      return;
+    }
+
+    const BASE = import.meta.env.VITE_BACKEND_API || "http://localhost:5050";
+    const url = selectedClusterId
+      ? `${BASE}/rack/by-cluster/${selectedClusterId}`
+      : `${BASE}/rack/by-datacenter/${realDcId}`;
+
+    const res = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      signal: abortController.signal,
+    });
+
+    if (abortController.signal.aborted) return;
+
+    const data = await res.json();
+    if (!res.ok) {
+      if (!isPolling) setRacksLoading(false);
+      return;
+    }
+
+    const fetchedRacks = Array.isArray(data.racks) ? data.racks : [];
+
+    if (isPolling) {
+      // Smart update: Only update changed fields, preserve card references
+      setRacks((prevRacks) => {
+        // If context changed (different racks), replace all
+        const prevIds = new Set(prevRacks.map(r => String(r._id)));
+        const newIds = new Set(fetchedRacks.map(r => String(r._id)));
+        const contextChanged = prevRacks.length !== fetchedRacks.length || 
+          ![...prevIds].every(id => newIds.has(id)) ||
+          ![...newIds].every(id => prevIds.has(id));
+
+        if (contextChanged) {
+          // Context changed - replace all (but this shouldn't happen in polling)
+          racksMapRef.current = new Map(fetchedRacks.map((r) => [String(r._id), r]));
+          return fetchedRacks;
+        }
+
+        const newRacksMap = new Map();
+        
+        // Create map of new racks by ID
+        fetchedRacks.forEach((rack) => {
+          newRacksMap.set(String(rack._id), rack);
+        });
+
+        // Update existing racks - preserve order
+        const updatedRacks = prevRacks.map((prevRack) => {
+          const rackId = String(prevRack._id);
+          const newRack = newRacksMap.get(rackId);
+          
+          if (!newRack) {
+            // Rack removed - filter it out
+            return null;
+          }
+
+          // Check if any important fields changed
+          const changed =
+            prevRack.tempV !== newRack.tempV ||
+            prevRack.humiV !== newRack.humiV ||
+            prevRack.tempA !== newRack.tempA ||
+            prevRack.humiA !== newRack.humiA ||
+            prevRack.name !== newRack.name;
+
+          // Only create new object if fields changed, otherwise keep reference
+          return changed ? { ...prevRack, ...newRack } : prevRack;
+        }).filter(Boolean); // Remove nulls
+
+        // Add any new racks that weren't in previous list
+        fetchedRacks.forEach((rack) => {
+          const rackId = String(rack._id);
+          if (!prevIds.has(rackId)) {
+            updatedRacks.push(rack);
+          }
+        });
+
+        // Update ref map
+        racksMapRef.current = newRacksMap;
+
+        return updatedRacks;
+      });
+    } else {
+      // Initial fetch or context change: replace all racks
+      setRacks(fetchedRacks);
+      racksMapRef.current = new Map(fetchedRacks.map((r) => [String(r._id), r]));
+      setRacksLoading(false);
+    }
+  } catch (err) {
+    if (err.name === "AbortError") return; // Request was cancelled
+    console.error("Failed to fetch racks:", err);
+    if (!isPolling) setRacksLoading(false);
+  }
+}, [selectedDcId, selectedClusterId, getEffectiveDataCenterId]);
+
+// ---------- Fetch racks when DC or Cluster changes ----------
+useEffect(() => {
+  fetchRacksDirectly(false); // Initial fetch, show skeleton
+
+  return () => {
+    // Cancel pending request on unmount or dependency change
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+  };
+}, [fetchRacksDirectly]);
+
 // ---------- Fetch clusters when DC changes ----------
 useEffect(() => {
   if (!selectedDcId) return;
@@ -3291,36 +3436,13 @@ useEffect(() => {
 }, [clusters, location.search, dispatch, selectedDcId, selectedClusterId]);
 
 
-// ---------- SINGLE SOURCE OF TRUTH: Fetch racks based on active context ----------
-// Priority: If cluster is selected → fetch by cluster, else → fetch by DC
-useEffect(() => {
-  // No DC selected → nothing to fetch
-  if (!selectedDcId) {
-    dispatch(clearRacks());
-    return;
-  }
-
-  const realDcId = getEffectiveDataCenterId(selectedDcId);
-  if (!realDcId) {
-    dispatch(clearRacks());
-    return;
-  }
-
-  // Priority: Cluster > Data Center
-  if (selectedClusterId) {
-    // Fetch racks for the selected cluster
-    dispatch(fetchRacksByClusterId(selectedClusterId));
-  } else {
-    // Fetch all racks for the data center
-    dispatch(fetchRacksByDataCenterId(realDcId));
-  }
-}, [selectedDcId, selectedClusterId, dispatch, dataCenters, user?.role]);
+// OLD REDUX-BASED CODE REMOVED - Now using fetchRacksDirectly function above
 
 
 
-  // ---------- 5) When rack list changes (either DC-level or cluster-level), auto-select first rack once ----------
+  // ---------- Auto-select first rack when racks are loaded ----------
   useEffect(() => {
-    const list = Array.isArray(rackState.racks) ? rackState.racks : [];
+    const list = racks; // Use local state instead of Redux
 
     // mark fetched even if empty
     const markFetchedForCurrent = () => {
@@ -3368,7 +3490,7 @@ useEffect(() => {
 
     markFetchedForCurrent();
   }, [
-    rackState.racks,
+    racks, // Use local state
     selectedDcId,
     selectedClusterId,
     selectedRackId,
@@ -3410,7 +3532,7 @@ useEffect(() => {
   // }, [selectedDcId, selectedClusterId, POLL_MS, dispatch]);
 
 
-  // ---------- 7) Polling: re-fetch only the active context (DC or cluster) ----------
+  // ---------- Polling: Smart update (only changed fields) ----------
 useEffect(() => {
   // Clear previous polling interval
   if (pollRef.current) {
@@ -3424,23 +3546,10 @@ useEffect(() => {
     return;
   }
 
-  // Calculate realDcId for polling (must be inside useEffect to access latest state)
-  const realDcId = getEffectiveDataCenterId(selectedDcId);
-  if (!realDcId) return;
-
-  const doPoll = () => {
-    // Priority: Cluster > Data Center (same logic as main fetch)
-    if (selectedClusterId) {
-      dispatch(fetchRacksByClusterId(selectedClusterId));
-    } else {
-      dispatch(fetchRacksByDataCenterId(realDcId));
-    }
-    // Alerts and cluster-means polling can be added here (dispatch thunks)
-  };
-
-  // Start polling: run once immediately, then at intervals
-  doPoll();
-  pollRef.current = setInterval(doPoll, POLL_MS);
+  // Start polling: fetch with smart update (isPolling = true)
+  pollRef.current = setInterval(() => {
+    fetchRacksDirectly(true); // Polling mode: smart update, no skeleton
+  }, POLL_MS);
   
   return () => {
     if (pollRef.current) {
@@ -3448,7 +3557,7 @@ useEffect(() => {
       pollRef.current = null;
     }
   };
-}, [selectedDcId, selectedClusterId, POLL_MS, dispatch, dataCenters, user?.role]);
+}, [selectedDcId, selectedClusterId, POLL_MS, fetchRacksDirectly]);
 
 
 
@@ -3457,11 +3566,7 @@ useEffect(() => {
     if (!dcId) return;
     
     // CRITICAL: Clear cluster selection from Redux state immediately
-    // This ensures no stale cluster filtering persists
     dispatch(setSelectedRackClusterId(null));
-    
-    // Clear racks to prevent stale data
-    dispatch(clearRacks());
     
     // Set new data center
     dispatch(setSelectedDataCenterId(dcId));
@@ -3471,11 +3576,15 @@ useEffect(() => {
     sp.set("dc", dcId);
     sp.delete("cluster"); // Clear cluster from URL
     navigate(`${location.pathname}?${sp.toString()}`, { replace: true });
+    
+    // Don't clear racks here - let fetchRacksDirectly handle it with loading state
+    // This prevents blinking by keeping old racks visible until new ones load
   };
 
   const handleClusterChange = (clusterId) => {
-    // Clear racks when cluster changes to prevent stale data
-    dispatch(clearRacks());
+    // Clear local racks state (will be refetched by useEffect)
+    setRacks([]);
+    racksMapRef.current.clear();
     
     // Set new cluster selection
     dispatch(setSelectedRackClusterId(clusterId || null));
@@ -3500,8 +3609,8 @@ useEffect(() => {
   console.log("User>>", user);
 
   // ---------- Render logic ----------
-  const showSkeleton = ui.isInitialContextLoad;
-  const noRacks = !activeRacks || activeRacks.length === 0;
+  const showSkeleton = racksLoading; // Show skeleton when loading
+  const noRacks = !racks || racks.length === 0;
 
   return (
     <div className="flex w-full flex-row h-full font-inter rounded-md bg-[#F5F6FA]">
@@ -3553,7 +3662,7 @@ useEffect(() => {
           
                     {viewMode === "table" ? (
                     <TabularView
-                    racks={activeRacks}
+                    racks={racks}
                     selectedRackId={selectedRackId}
                     onSelect={(id) => dispatch(setSelectedRackId(id))}
                     />
@@ -3568,7 +3677,7 @@ useEffect(() => {
                     <></>
                     ) : (
                     <div className="freezer-cards-grid">
-                    {activeRacks.map((rack) => (
+                    {racks.map((rack) => (
                     <FreezerDeviceCard
                     key={rack?._id}
                     deviceId={rack?.name}
@@ -3594,12 +3703,19 @@ useEffect(() => {
       </div>
 
       {isDesktop ? (
-        <DashboardRightPanel  pollInterval={POLL_MS} selectedRackId={selectedRackId} selectedDataCenterId={selectedDcId} selectedRackClusterId={selectedClusterId} />
+        <DashboardRightPanel  pollInterval={POLL_MS} selectedRackId={selectedRackId} selectedDataCenterId={selectedDcId} selectedRackClusterId={selectedClusterId} racks={racks} />
       ) : (
         <Drawer open={drawerOpen} onClose={clearSelectedRack} anchor="right">
-          <DashboardRightPanel pollInterval={POLL_MS}  selectedRackId={selectedRackId} selectedDataCenterId={selectedDcId} selectedRackClusterId={selectedClusterId} closeIcon onClose={clearSelectedRack} />
+          <DashboardRightPanel pollInterval={POLL_MS}  selectedRackId={selectedRackId} selectedDataCenterId={selectedDcId} selectedRackClusterId={selectedClusterId} closeIcon onClose={clearSelectedRack} racks={racks} />
         </Drawer>
       )}
     </div>
   );
 }
+
+
+
+
+
+
+
