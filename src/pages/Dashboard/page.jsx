@@ -3068,7 +3068,7 @@ import TabularView from "../../components/TabularView";
 
 import { fetchAllDataCenters, fetchDataCentersByUser } from "../../slices/DataCenterSlice";
 import { fetchRackClustersByDataCenter } from "../../slices/rackClusterSlice";
-import { fetchRacksByDataCenterId, fetchRacksByClusterId, fetchRackById } from "../../slices/rackSlice";
+import { fetchRacksByDataCenterId, fetchRacksByClusterId, fetchRackById, clearRacks } from "../../slices/rackSlice";
 import {
   setSelectedDataCenterId,
   setSelectedRackClusterId,
@@ -3261,89 +3261,60 @@ useEffect(() => {
 }, [dataCenters, dispatch]);
 
 
+// ---------- Fetch clusters when DC changes ----------
 useEffect(() => {
+  if (!selectedDcId) return;
+
+  const realDcId = getEffectiveDataCenterId(selectedDcId);
+  if (!realDcId) return;
+
+  // Fetch clusters for the real data center id
+  dispatch(fetchRackClustersByDataCenter(realDcId));
+}, [selectedDcId, dispatch, dataCenters, user?.role]);
+
+
+// ---------- Restore cluster selection from URL when clusters are loaded ----------
+useEffect(() => {
+  if (!clusters || clusters.length === 0) return;
   if (!selectedDcId) return;
 
   const sp = new URLSearchParams(location.search);
   const urlCluster = sp.get("cluster");
 
-  const realDcId = getEffectiveDataCenterId(selectedDcId);
-  if (!realDcId) return;
-
-  // fetch clusters for the real data center id
-  dispatch(fetchRackClustersByDataCenter(realDcId));
-
-  // fetch DC-level racks only when no cluster param
-  if (!urlCluster) {
-    dispatch(fetchRacksByDataCenterId(realDcId));
+  // If URL has cluster param and it exists in loaded clusters, restore it
+  if (urlCluster) {
+    const found = clusters.find((c) => String(c._id) === String(urlCluster));
+    if (found && String(selectedClusterId) !== String(urlCluster)) {
+      dispatch(setSelectedRackClusterId(urlCluster));
+    }
   }
-}, [selectedDcId, dispatch, location.search, /* add dataCenters so helper sees latest list */ dataCenters]);
+}, [clusters, location.search, dispatch, selectedDcId, selectedClusterId]);
 
 
-  // Fetch racks according to active context
-  useEffect(() => {
-    // if no DC selected, nothing to do
-    if (!selectedDcId) return;
-
-    // Only fetch by cluster if cluster is selected
-    // if (selectedClusterId) {
-    //   dispatch(fetchRacksByClusterId(selectedClusterId));
-    // } else {
-    //   dispatch(fetchRacksByDataCenterId(selectedDcId));
-    // }
-
-    if (selectedClusterId) {
-  dispatch(fetchRacksByClusterId(selectedClusterId));
-} else {
-  const realDcId = getEffectiveDataCenterId(selectedDcId);
-  if (realDcId) dispatch(fetchRacksByDataCenterId(realDcId));
-}
-
-  },
-    // only trigger after both selectedDcId and selectedClusterId are restored
-    [selectedDcId, selectedClusterId, dispatch]);
-
-
-  // // ---------- Restore cluster selection from URL ----------
-  // useEffect(() => {
-  //   if (!clusters || clusters.length === 0) return;
-
-  //   const sp = new URLSearchParams(location.search);
-  //   const urlCluster = sp.get("cluster");
-
-  //   if (urlCluster && clusters.find(c => String(c._id) === String(urlCluster))) {
-  //     dispatch(setSelectedRackClusterId(urlCluster));
-  //   }
-  // }, [clusters, location.search, dispatch]);
-
-
-  useEffect(() => {
-  // Wait until clusters for the selected DC have been loaded (could be empty)
-  if (!clusters) return;
-
-  const sp = new URLSearchParams(location.search);
-  const urlCluster = sp.get("cluster");
-
-  if (!urlCluster) {
-    // No cluster param — nothing to restore; ensure DC-level racks are loaded
-    // if (selectedDcId) dispatch(fetchRacksByDataCenterId(selectedDcId));
-    if (selectedDcId) dispatch(fetchRacksByDataCenterId(realDcId));
+// ---------- SINGLE SOURCE OF TRUTH: Fetch racks based on active context ----------
+// Priority: If cluster is selected → fetch by cluster, else → fetch by DC
+useEffect(() => {
+  // No DC selected → nothing to fetch
+  if (!selectedDcId) {
+    dispatch(clearRacks());
     return;
   }
 
-  // If cluster exists in loaded clusters, restore selection
-  const found = clusters.find((c) => String(c._id) === String(urlCluster));
-  if (found) {
-    dispatch(setSelectedRackClusterId(urlCluster));
+  const realDcId = getEffectiveDataCenterId(selectedDcId);
+  if (!realDcId) {
+    dispatch(clearRacks());
     return;
   }
 
-  // urlCluster exists but not found in clusters -> fallback to DC-level racks
-  // (this covers cases where the URL had an invalid/old cluster id)
-  if (selectedDcId) {
+  // Priority: Cluster > Data Center
+  if (selectedClusterId) {
+    // Fetch racks for the selected cluster
+    dispatch(fetchRacksByClusterId(selectedClusterId));
+  } else {
+    // Fetch all racks for the data center
     dispatch(fetchRacksByDataCenterId(realDcId));
   }
-}, [clusters, location.search, dispatch, selectedDcId]);
+}, [selectedDcId, selectedClusterId, dispatch, dataCenters, user?.role]);
 
 
 
@@ -3441,18 +3412,24 @@ useEffect(() => {
 
   // ---------- 7) Polling: re-fetch only the active context (DC or cluster) ----------
 useEffect(() => {
-  // clear previous
+  // Clear previous polling interval
   if (pollRef.current) {
     clearInterval(pollRef.current);
     pollRef.current = null;
   }
+  
   if (!selectedDcId) return;
   if (!POLL_MS) {
-    // nothing to poll (explicitly disabled)
+    // Nothing to poll (explicitly disabled)
     return;
   }
 
+  // Calculate realDcId for polling (must be inside useEffect to access latest state)
+  const realDcId = getEffectiveDataCenterId(selectedDcId);
+  if (!realDcId) return;
+
   const doPoll = () => {
+    // Priority: Cluster > Data Center (same logic as main fetch)
     if (selectedClusterId) {
       dispatch(fetchRacksByClusterId(selectedClusterId));
     } else {
@@ -3461,32 +3438,49 @@ useEffect(() => {
     // Alerts and cluster-means polling can be added here (dispatch thunks)
   };
 
-  // start poll
-  doPoll(); // optionally run once immediately
+  // Start polling: run once immediately, then at intervals
+  doPoll();
   pollRef.current = setInterval(doPoll, POLL_MS);
+  
   return () => {
-    if (pollRef.current) clearInterval(pollRef.current);
-    pollRef.current = null;
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
   };
-}, [selectedDcId, selectedClusterId, POLL_MS, dispatch]);
+}, [selectedDcId, selectedClusterId, POLL_MS, dispatch, dataCenters, user?.role]);
 
 
 
   // ---------- UI handlers ----------
   const handleDataCenterChange = (dcId) => {
     if (!dcId) return;
+    
+    // CRITICAL: Clear cluster selection from Redux state immediately
+    // This ensures no stale cluster filtering persists
+    dispatch(setSelectedRackClusterId(null));
+    
+    // Clear racks to prevent stale data
+    dispatch(clearRacks());
+    
+    // Set new data center
     dispatch(setSelectedDataCenterId(dcId));
-    // update url
+    
+    // Update URL
     const sp = new URLSearchParams(location.search);
     sp.set("dc", dcId);
-    // keep cluster param cleared when DC changed
-    sp.delete("cluster");
+    sp.delete("cluster"); // Clear cluster from URL
     navigate(`${location.pathname}?${sp.toString()}`, { replace: true });
   };
 
   const handleClusterChange = (clusterId) => {
-    // user-driven only
+    // Clear racks when cluster changes to prevent stale data
+    dispatch(clearRacks());
+    
+    // Set new cluster selection
     dispatch(setSelectedRackClusterId(clusterId || null));
+    
+    // Update URL
     const sp = new URLSearchParams(location.search);
     if (clusterId) sp.set("cluster", clusterId);
     else sp.delete("cluster");
