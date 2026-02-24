@@ -3298,7 +3298,21 @@ const fetchRacksDirectly = useCallback(async (isPolling = false) => {
     }
 
     const BASE = import.meta.env.VITE_BACKEND_API || "http://localhost:5050";
-    const url = selectedClusterId
+    
+    // CRITICAL: Validate that selectedClusterId belongs to current DC
+    // If cluster doesn't belong to current DC, ignore it and fetch by DC
+    // Also, if clusters haven't loaded yet for this DC, fetch by DC
+    let shouldFetchByCluster = false;
+    if (selectedClusterId && clusters && clusters.length > 0) {
+      // Check if cluster exists in current clusters list (which are filtered by current DC)
+      const clusterBelongsToCurrentDc = clusters.some(
+        (c) => String(c._id) === String(selectedClusterId)
+      );
+      shouldFetchByCluster = clusterBelongsToCurrentDc;
+    }
+    // If no clusters loaded yet or cluster doesn't belong to current DC, fetch by DC
+    
+    const url = shouldFetchByCluster
       ? `${BASE}/rack/by-cluster/${selectedClusterId}`
       : `${BASE}/rack/by-datacenter/${realDcId}`;
 
@@ -3391,7 +3405,7 @@ const fetchRacksDirectly = useCallback(async (isPolling = false) => {
     console.error("Failed to fetch racks:", err);
     if (!isPolling) setRacksLoading(false);
   }
-}, [selectedDcId, selectedClusterId, getEffectiveDataCenterId]);
+}, [selectedDcId, selectedClusterId, getEffectiveDataCenterId, clusters]);
 
 // ---------- Fetch racks when DC or Cluster changes ----------
 useEffect(() => {
