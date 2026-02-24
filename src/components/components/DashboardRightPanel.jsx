@@ -750,16 +750,23 @@ export default function DashboardRightPanel({
     }
   }, [racks, selectedRackId, dispatch]);
 
-  // Ensure full rack details loaded if a rack is selected (find in racks; if not present, fetch it)
+  // Ensure full rack details loaded if a rack is selected (find in racks; if not present, use Redux selectedRack or fetch it)
   const selectedRack = useMemo(() => {
     if (!selectedRackId) return null;
-    return racks.find((r) => String(r._id) === String(selectedRackId)) || null;
-  }, [racks, selectedRackId]);
+    // First try to find in racks prop (from Dashboard)
+    const foundInRacks = racks.find((r) => String(r._id) === String(selectedRackId));
+    if (foundInRacks) return foundInRacks;
+    // Fallback to Redux selectedRack (from fetchRackById)
+    if (rackState.selectedRack && String(rackState.selectedRack._id) === String(selectedRackId)) {
+      return rackState.selectedRack;
+    }
+    return null;
+  }, [racks, selectedRackId, rackState.selectedRack]);
 
   useEffect(() => {
     if (!selectedRackId) return;
     if (!selectedRack) {
-      // fallback: fetch single rack details (this will put it into rackState via your fetchRackById thunk)
+      // fallback: fetch single rack details (this will put it into rackState.selectedRack via fetchRackById thunk)
       dispatch(fetchRackById(selectedRackId));
     }
   }, [selectedRackId, selectedRack, dispatch]);
